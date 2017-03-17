@@ -39,6 +39,7 @@ export default class ClientErrorCollector {
 						switch (result.error.name) {
 						case 'EvalError':
 							e = new EvalError(result.error.message);
+							break;
 						case 'RangeError':
 							e = new RangeError(result.error.message);
 							break;
