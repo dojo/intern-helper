@@ -5,9 +5,9 @@ export const environments = [
 	{ browserName: 'microsoftedge', platform: 'Windows 10' },
 	{ browserName: 'firefox', platform: 'Windows 10' },
 	{ browserName: 'chrome', platform: 'Windows 10' },
-	{ browserName: 'safari', version: '10', platform: 'OS X 10.12' },
+	{ browserName: 'safari', version: '10.0', platform: 'macOS 10.12' },
 	// Andriod causing issues when run from travis
-	// { browserName: 'android', deviceName: 'Google Nexus 7 HD Emulator' },
+	// { browserName: 'Browser', appiumVersion: '1.5.3', deviceName: 'Android Emulator', platformVersion: '5.1', platformName: 'Android' },
 	{ browserName: 'iphone', version: '9.3' }
 ];
 
