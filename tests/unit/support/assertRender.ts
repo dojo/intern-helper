@@ -129,6 +129,22 @@ registerSuite({
 						v('div', { }, [ v('i', {}, [ 'foo' ]) ])
 					);
 				}, AssertionError, 'Render unexpected');
+			},
+
+			'WNode children equal'() {
+				assertRender(
+					v('div', { }, [ v('span', {}, [ w(MockWidget, { foo: 'bar', baz() { } }) ]) ]),
+					v('div', { }, [ v('span', {}, [ w(MockWidget, { foo: 'bar', baz() { } }) ]) ])
+				);
+			},
+
+			'WNode children not equal'() {
+				assert.throws(() => {
+					assertRender(
+						v('div', { }, [ v('span', {}, [ w(MockWidget, { foo: 'bar', baz() { } }) ]) ]),
+						v('div', { }, [ v('span', {}, [ w(MockWidget, { foo: 'baz', baz() { } }) ]) ])
+					);
+				}, AssertionError, 'Render unexpected');
 			}
 		},
 
