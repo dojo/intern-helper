@@ -1,10 +1,16 @@
-import { DNode } from '@dojo/widget-core/interfaces';
-import { diff } from './compare';
 import { isHNode, isWNode } from '@dojo/widget-core/d';
+import { DNode } from '@dojo/widget-core/interfaces';
 import * as AssertionError from 'assertion-error';
+import { diff } from './compare';
 
 const RENDER_FAIL_MESSAGE = 'Render unexpected';
 
+/**
+ * Internal function that throws an AssertionError
+ * @param actual actual value
+ * @param expected expected value
+ * @param message any message to be part of the error
+ */
 function throwAssertionError(actual: any, expected: any, message?: string): never {
 	throw new AssertionError(message ? `${RENDER_FAIL_MESSAGE}: ${message}` : RENDER_FAIL_MESSAGE, {
 		actual,
@@ -13,6 +19,21 @@ function throwAssertionError(actual: any, expected: any, message?: string): neve
 	}, assertRender);
 }
 
+/**
+ * A function that asserts Dojo virtual DOM against expected virtual DOM.  When the actual and
+ * expected differ, the function will throw an `AssertionError`.  It is expected to be used
+ * in conjunction with `w` and `v` from `@dojo/widget-core/d` and would look something like this:
+ *
+ * ```ts
+ * assertRender(results, v('div', {
+ *     classes: [ css.root ]
+ * }, [ w(SubWidget, { open: true }) ]));
+ * ```
+ *
+ * @param actual The actual rendered DNode to be asserted
+ * @param expected The expected DNode to be asserted against the actual
+ * @param message Any message to be part of an error thrown if actual and expected do not match
+ */
 export default function assertRender(actual: DNode, expected: DNode, message?: string): void {
 
 	function assertChildren(actual: DNode[], expected: DNode[]) {

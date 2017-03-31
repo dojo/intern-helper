@@ -1,7 +1,7 @@
 import { assign } from '@dojo/core/lang';
 import { keys } from '@dojo/shim/object';
 
-/* Assigning to local variables to improve minification */
+/* Assigning to local variables to improve minification and readability */
 
 const objectCreate = Object.create;
 const hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -148,6 +148,11 @@ function createValuePropertyDescriptor(value: any, writable: boolean = true, enu
  * @param allowFunctions Allows functions as values and treats them as equal based on `typeof` comparison
  */
 function diffArray(a: any[], b: any, allowFunctions: boolean): SpliceRecord[] {
+	/* This function takes an overly simplistic approach to calculating splice records.  There are many situations where
+	 * in complicated array mutations, the splice records can be more optimised.
+	 *
+	 * TODO: Raise an issue for this when it is finally merged and put into core
+	 */
 	const arrayA = a;
 	const lengthA = arrayA.length;
 	const arrayB = isArray(b) ? b : [];
@@ -246,11 +251,11 @@ function diffPlainObject(a: any, b: any, allowFunctions: boolean): PatchRecord[]
 
 		if (bHasOwnProperty && (valueA === valueB ||
 			(allowFunctions && typeof valueA === 'function' && typeof valueB === 'function'))) { /* not different */
+				/* when `allowFunctions` is true, functions are simply considered to be equal by `typeof` */
 				return patchRecords;
 		}
 
-		/* TODO: The literal assertion is not required in 2.1 */
-		const type: 'update' | 'add' = bHasOwnProperty ? 'update' : 'add';
+		const type = bHasOwnProperty ? 'update' : 'add';
 
 		const isValueAArray = isArray(valueA);
 		const isValueAPlainObject = isPlainObject(valueA);
