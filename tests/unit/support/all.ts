@@ -1,2 +1,2 @@
 import './compare';
-import './assertRender';
+import 'intern/dojo/has!host-node?./assertRender';
