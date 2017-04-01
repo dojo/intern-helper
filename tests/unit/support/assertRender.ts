@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import * as AssertionError from 'assertion-error';
+import AssertionError from '../../../src/support/AssertionError';
 import assertRender from '../../../src/support/assertRender';
 import { v, w } from '@dojo/widget-core/d';
 import WidgetBase from '@dojo/widget-core/WidgetBase';

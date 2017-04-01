@@ -36,7 +36,6 @@
     "maquette": "2.4.5"
   },
   "dependencies": {
-    "assertion-error": "^1.0.2",
     "jsdom": "^9.12.0"
   },
   "devDependencies": {

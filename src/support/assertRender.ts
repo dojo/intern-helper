@@ -1,6 +1,6 @@
 import { isHNode, isWNode } from '@dojo/widget-core/d';
 import { DNode } from '@dojo/widget-core/interfaces';
-import * as AssertionError from 'assertion-error';
+import AssertionError from './AssertionError';
 import { diff } from './compare';
 
 const RENDER_FAIL_MESSAGE = 'Render unexpected';

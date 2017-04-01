@@ -1,2 +1,3 @@
 import './compare';
-import 'intern/dojo/has!host-node?./assertRender';
+import './AssertionError';
+import './assertRender';

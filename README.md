@@ -43,4 +43,7 @@ or
 
 ## Licensing information
 
+- `src/support/AssertionError` is adapted from [assertion-error](https://github.com/chaijs/assertion-error)
+  and is © 2013 Jake Luer and [MIT Licensed](http://opensource.org/licenses/MIT)
+
 © [JS Foundation](https://js.foundation/) & contributors. [New BSD](http://opensource.org/licenses/BSD-3-Clause) license.
