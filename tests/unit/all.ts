@@ -1,4 +1,7 @@
-import 'intern/dojo/has!host-node?../../src/support/loadJsdom';
+/* Ensure there is a DOM to test against */
+import '../../src/support/loadJsdom';
+
+/* Modules to test */
 import './ClientErrorCollector';
 import './harness';
 import './main';
