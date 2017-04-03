@@ -50,21 +50,21 @@ registerSuite({
 				]);
 			},
 
-			'allowFunctions - equal'() {
+			'allowFunctionValues - equal'() {
 				const patchRecords = diff({
 					foo() { }
 				}, {
 					foo() { }
-				}, true);
+				}, { allowFunctionValues: true });
 
 				assert.strictEqual(patchRecords.length, 0, 'should not see a difference');
 			},
 
-			'allowFunctions - add property'() {
+			'allowFunctionValues - add property'() {
 				function foo() {}
 				const patchRecords = diff({
 					foo
-				}, { }, true);
+				}, { }, { allowFunctionValues: true });
 
 				assert.deepEqual(patchRecords, [
 					{
@@ -289,6 +289,74 @@ registerSuite({
 						type: 'add'
 					}
 				]);
+			},
+
+			'ignored properties': {
+				'string property added'() {
+					const a = {
+						foo: 'bar',
+						bar: 1
+					};
+
+					const patchRecords = diff(a, {}, { ignoreProperties: [ 'bar' ]});
+
+					assert.deepEqual(patchRecords, [
+						{
+							descriptor: { configurable: true, enumerable: true, value: 'bar', writable: true },
+							name: 'foo',
+							type: 'add'
+						}
+					]);
+				},
+
+				'string property deleted'() {
+					const b = {
+						foo: 'bar',
+						bar: 1
+					};
+
+					const patchRecords = diff({}, b, { ignoreProperties: [ 'bar' ]});
+
+					assert.deepEqual(patchRecords, [
+						{
+							name: 'foo',
+							type: 'delete'
+						}
+					]);
+				},
+
+				'regex property added'() {
+					const a = {
+						foo: 'bar',
+						_bar: 1
+					};
+
+					const patchRecords = diff(a, {}, { ignoreProperties: [ /^_/ ]});
+
+					assert.deepEqual(patchRecords, [
+						{
+							descriptor: { configurable: true, enumerable: true, value: 'bar', writable: true },
+							name: 'foo',
+							type: 'add'
+						}
+					]);
+				},
+
+				'regex property deleted'() {
+					const b = {
+						foo: 'bar',
+						_bar: 1
+					};
+
+					const patchRecords = diff({}, b, { ignoreProperties: [ /^_/ ]});
+
+					assert.deepEqual(patchRecords, [
+						{
+							name: 'foo',
+							type: 'delete'
+						}
+					]);
+				}
 			}
 		},
 
@@ -420,15 +488,15 @@ registerSuite({
 				]);
 			},
 
-			'allowFunctions - equal'() {
-				const patchRecords = diff([ function foo () { } ], [ () => undefined ], true);
+			'allowFunctionValues - equal'() {
+				const patchRecords = diff([ function foo () { } ], [ () => undefined ], { allowFunctionValues: true });
 
 				assert.lengthOf(patchRecords, 0, 'should have no differences');
 			},
 
-			'allowFunctions - add'() {
+			'allowFunctionValues - add'() {
 				function foo() {}
-				const patchRecords = diff([ foo ], [], true);
+				const patchRecords = diff([ foo ], [], { allowFunctionValues: true });
 
 				assert.deepEqual(patchRecords, [
 					{
