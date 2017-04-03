@@ -217,7 +217,7 @@ function diffArray(a: any[], b: any, options: DiffOptions): SpliceRecord[] {
 				addDifference(index, true, diff(valueA, value, options));
 			}
 		}
-		else if (isPrimative(valueA)) {
+		else if (isPrimitive(valueA)) {
 			addDifference(index, true, valueA);
 		}
 		else if (allowFunctionValues && typeof valueA === 'function') {
@@ -288,7 +288,7 @@ function diffPlainObject(a: any, b: any, options: DiffOptions): PatchRecord[] {
 					patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(value), diff(valueA, value, options)));
 				}
 			}
-			else if (isPrimative(valueA)) { /* primitive values can just be copied */
+			else if (isPrimitive(valueA)) { /* primitive values can just be copied */
 				patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(valueA)));
 			}
 			else if (allowFunctionValues && typeof valueA === 'function') { /* catch functions that are in a but not in b */
@@ -345,12 +345,12 @@ function isPlainObject(value: any): value is Object {
 }
 
 /**
- * A guard that determines if the value is a primative (including `null`), as these values are
+ * A guard that determines if the value is a primitive (including `null`), as these values are
  * fine to just copy.
  *
  * @param value The value to check
  */
-function isPrimative(value: any): value is (string | number | boolean | undefined | null) {
+function isPrimitive(value: any): value is (string | number | boolean | undefined | null) {
 	const typeofValue = typeof value;
 	return value === null ||
 		typeofValue === 'undefined' ||
