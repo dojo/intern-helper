@@ -3,9 +3,9 @@ import 'pepjs';
 import Evented from '@dojo/core/Evented';
 import { createHandle } from '@dojo/core/lang';
 import { VNode } from '@dojo/interfaces/vdom';
-import { DNode, WidgetProperties, WidgetBaseConstructor, WidgetBaseInterface } from '@dojo/widget-core/interfaces';
+import { Constructor, DNode, WidgetProperties } from '@dojo/widget-core/interfaces';
 import { v, w } from '@dojo/widget-core/d';
-import WidgetBase from '@dojo/widget-core/WidgetBase';
+import WidgetBase, { afterRender } from '@dojo/widget-core/WidgetBase';
 import cssTransitions from '@dojo/widget-core/animations/cssTransitions';
 import { dom, Projection, ProjectionOptions, VNodeProperties } from 'maquette';
 import assertRender from './support/assertRender';
@@ -40,31 +40,46 @@ const EVENT_HANDLERS = [
 	'onsubmit'
 ];
 
+interface SpyRenderMixin {
+	spyRender(result: DNode): DNode;
+}
+
 /**
- * A private class that is used to actually render the widget.
+ * A mixin that adds a spy to the render process
+ * @param base The base class to add the render spy to
+ * @param target An object with a property named `lastRender` which will be set to the result of the `render()` method
  */
-class RenderWidget<P extends WidgetProperties, W extends WidgetBaseConstructor<P>> extends WidgetBase<P> {
+function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(base: T, target: { lastRender: DNode }): T & Constructor<SpyRenderMixin> {
+
+	class SpyRender extends base {
+		@afterRender
+		spyRender(result: DNode): DNode {
+			target.lastRender = result;
+			return result;
+		}
+	};
+
+	return SpyRender;
+}
+
+/**
+ * A private class that is used to actually render the widget and keep track of the last render by
+ * the harnessed widget.
+ */
+class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> extends WidgetBase<P> {
 	private _widgetConstructor: W;
 	private _afterCreate: (element: HTMLElement) => void;
-	private _cachedWidget: WidgetBaseInterface<P> | undefined;
 
 	public lastRender: DNode;
 
 	constructor(widgetConstructor: W, afterCreate: (element: HTMLElement) => void) {
 		super();
 
-		this._widgetConstructor = widgetConstructor;
+		this._widgetConstructor = SpyRenderMixin(widgetConstructor, this);
 		this._afterCreate = afterCreate;
 	}
 
 	render(): DNode {
-		if (!this._cachedWidget) {
-			this._cachedWidget = new this._widgetConstructor();
-			this.own(this._cachedWidget);
-		}
-		this._cachedWidget.setProperties(this.properties);
-		this.lastRender = (<any> this._cachedWidget).render();
-
 		return v(
 				ROOT_CUSTOM_ELEMENT_NAME,
 				{ afterCreate: this._afterCreate },
@@ -76,7 +91,7 @@ class RenderWidget<P extends WidgetProperties, W extends WidgetBaseConstructor<P
 /**
  * Harness a widget constructor, providing an API to interact with the widget for testing purposes.
  */
-export class WidgetHarness<P extends WidgetProperties, W extends WidgetBaseConstructor<P>> extends Evented {
+export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> extends Evented {
 	private _attached = false;
 
 	private _afterCreate = (element: HTMLElement) => {
@@ -94,9 +109,9 @@ export class WidgetHarness<P extends WidgetProperties, W extends WidgetBaseConst
 	private _projection: Projection | undefined;
 	private _projectionOptions: ProjectionOptions;
 	private _projectionRoot: HTMLElement;
-	private _renderWidget: RenderWidget<P, W>;
-	private _renderWidgetRender: () => string | VNode | null;
 	private _root: HTMLElement | undefined;
+	private _widgetHarness: WidgetHarness<P, W>;
+	private _widgetHarnessRender: () => string | VNode | null;
 
 	/**
 	 * Harness a widget constructor, providing an API to interact with the widget for testing purposes.
@@ -112,9 +127,9 @@ export class WidgetHarness<P extends WidgetProperties, W extends WidgetBaseConst
 			eventHandlerInterceptor: this._eventHandlerInterceptor.bind(this)
 		};
 
-		this._renderWidget = new RenderWidget<P, W>(widgetConstructor, this._afterCreate);
-		this._renderWidgetRender = this._renderWidget.__render__.bind(this._renderWidget);
-		this.own(this._renderWidget);
+		this._widgetHarness = new WidgetHarness<P, W>(widgetConstructor, this._afterCreate);
+		this._widgetHarnessRender = this._widgetHarness.__render__.bind(this._widgetHarness);
+		this.own(this._widgetHarness);
 	}
 
 	private _attach(): boolean {
@@ -147,7 +162,7 @@ export class WidgetHarness<P extends WidgetProperties, W extends WidgetBaseConst
 	}
 
 	private _getVNode(): VNode {
-		const vnode = this._renderWidget.__render__();
+		const vnode = this._widgetHarness.__render__();
 		if (typeof vnode === 'string' || vnode === null) {
 			throw new TypeError('Render cannot be string or null');
 		}
@@ -179,7 +194,7 @@ export class WidgetHarness<P extends WidgetProperties, W extends WidgetBaseConst
 	 */
 	public getRender(): DNode {
 		this._render();
-		return this._renderWidget.lastRender;
+		return this._widgetHarness.lastRender;
 	}
 
 	/**
@@ -194,7 +209,7 @@ export class WidgetHarness<P extends WidgetProperties, W extends WidgetBaseConst
 	}
 
 	public setProperties(properties: P): this {
-		this._renderWidget.setProperties(properties);
+		this._widgetHarness.setProperties(properties);
 		return this;
 	}
 
@@ -218,6 +233,6 @@ export class WidgetHarness<P extends WidgetProperties, W extends WidgetBaseConst
  * @param widgetConstructor The constructor function/class of widget that should be harnessed.
  * @param projectionRoot The root where the harness should append itself to the DOM.  Default to `document.body`
  */
-export default function harness<P extends WidgetProperties, W extends WidgetBaseConstructor<P>>(widgetConstructor: W, projectionRoot?: HTMLElement): WidgetHarness<P, W> {
-	return new WidgetHarness<P, W>(widgetConstructor, projectionRoot);
+export default function harness<P extends WidgetProperties, W extends typeof WidgetBase>(widgetConstructor: W, projectionRoot?: HTMLElement): Harness<P, W> {
+	return new Harness<P, W>(widgetConstructor, projectionRoot);
 }
