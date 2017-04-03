@@ -10,6 +10,11 @@ const isArray = Array.isArray;
 const isFrozen = Object.isFrozen;
 const isSealed = Object.isSealed;
 
+interface DiffOptions {
+	allowFunctionValues?: boolean;
+	ignoreProperties?: (string | RegExp)[];
+}
+
 /**
  * A record that describes the mutations necessary to a property of an object to make that property look
  * like another
@@ -145,14 +150,17 @@ function createValuePropertyDescriptor(value: any, writable: boolean = true, enu
  *
  * @param a The first array to compare to
  * @param b The second value to compare to
- * @param allowFunctions Allows functions as values and treats them as equal based on `typeof` comparison
+ * @param options An options bag that allows configuration of the behaviour of `diffArray()`
  */
-function diffArray(a: any[], b: any, allowFunctions: boolean): SpliceRecord[] {
+function diffArray(a: any[], b: any, options: DiffOptions): SpliceRecord[] {
 	/* This function takes an overly simplistic approach to calculating splice records.  There are many situations where
 	 * in complicated array mutations, the splice records can be more optimised.
 	 *
 	 * TODO: Raise an issue for this when it is finally merged and put into core
 	 */
+
+	const { allowFunctionValues = false } = options;
+
 	const arrayA = a;
 	const lengthA = arrayA.length;
 	const arrayB = isArray(b) ? b : [];
@@ -195,7 +203,7 @@ function diffArray(a: any[], b: any, allowFunctions: boolean): SpliceRecord[] {
 	arrayA.forEach((valueA, index) => {
 		const valueB = arrayB[index];
 
-		if (index in arrayB && (valueA === valueB || (allowFunctions && typeof valueA === 'function' && typeof valueB === 'function'))) {
+		if (index in arrayB && (valueA === valueB || (allowFunctionValues && typeof valueA === 'function' && typeof valueB === 'function'))) {
 			return; /* not different */
 		}
 
@@ -204,15 +212,15 @@ function diffArray(a: any[], b: any, allowFunctions: boolean): SpliceRecord[] {
 
 		if (isValueAArray || isValueAPlainObject) {
 			const value = isValueAArray ? isArray(valueB) ? valueB : [] : isPlainObject(valueB) ? valueB : Object.create(null);
-			const valueRecords = diff(valueA, value);
+			const valueRecords = diff(valueA, value, options);
 			if (valueRecords.length) { /* only add if there are changes */
-				addDifference(index, true, diff(valueA, value));
+				addDifference(index, true, diff(valueA, value, options));
 			}
 		}
 		else if (isPrimative(valueA)) {
 			addDifference(index, true, valueA);
 		}
-		else if (allowFunctions && typeof valueA === 'function') {
+		else if (allowFunctionValues && typeof valueA === 'function') {
 			addDifference(index, true, valueA);
 		}
 		else {
@@ -238,55 +246,64 @@ function diffArray(a: any[], b: any, allowFunctions: boolean): SpliceRecord[] {
  *
  * @param a The first plain object to compare to
  * @param b The second plain bject to compare to
- * @param allowFunctions Allows functions to be values and treats them equal based on `typeof` comparison
+ * @param options An options bag that allows configuration of the behaviour of `diffPlainObject()`
  */
-function diffPlainObject(a: any, b: any, allowFunctions: boolean): PatchRecord[] {
+function diffPlainObject(a: any, b: any, options: DiffOptions): PatchRecord[] {
+	const { allowFunctionValues = false, ignoreProperties = [] } = options;
 	const patchRecords: PatchRecord[] = [];
+
+	function isIgnoredProperty(name: string) {
+		return ignoreProperties.some((value) => {
+			return typeof value === 'string' ? name === value : value.test(name);
+		});
+	}
 
 	/* look for keys in a that are different from b */
 	keys(a).reduce((patchRecords, name) => {
-		const valueA = a[name];
-		const valueB = b[name];
-		const bHasOwnProperty = hasOwnProperty.call(b, name);
+		if (!isIgnoredProperty(name)) {
+			const valueA = a[name];
+			const valueB = b[name];
+			const bHasOwnProperty = hasOwnProperty.call(b, name);
 
-		if (bHasOwnProperty && (valueA === valueB ||
-			(allowFunctions && typeof valueA === 'function' && typeof valueB === 'function'))) { /* not different */
-				/* when `allowFunctions` is true, functions are simply considered to be equal by `typeof` */
-				return patchRecords;
-		}
-
-		const type = bHasOwnProperty ? 'update' : 'add';
-
-		const isValueAArray = isArray(valueA);
-		const isValueAPlainObject = isPlainObject(valueA);
-
-		if (isValueAArray || isValueAPlainObject) { /* non-primitive values we can diff */
-			/* this is a bit complicated, but essentially if valueA and valueB are both arrays or plain objects, then
-			 * we can diff those two values, if not, then we need to use an empty array or an empty object and diff
-			 * the valueA with that */
-			const value = (isValueAArray && isArray(valueB)) || (isValueAPlainObject && isPlainObject(valueB)) ?
-				valueB : isValueAArray ?
-					[] : objectCreate(null);
-			const valueRecords = diff(valueA, value);
-			if (valueRecords.length) { /* only add if there are changes */
-				patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(value), diff(valueA, value)));
+			if (bHasOwnProperty && (valueA === valueB ||
+				(allowFunctionValues && typeof valueA === 'function' && typeof valueB === 'function'))) { /* not different */
+					/* when `allowFunctionValues` is true, functions are simply considered to be equal by `typeof` */
+					return patchRecords;
 			}
-		}
-		else if (isPrimative(valueA)) { /* primitive values can just be copied */
-			patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(valueA)));
-		}
-		else if (allowFunctions && typeof valueA === 'function') { /* catch functions that are in a but not in b */
-			patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(valueA)));
-		}
-		else {
-			throw new TypeError(`Value of property named "${name}" from first argument is not a primative, plain Object, or Array.`);
+
+			const type = bHasOwnProperty ? 'update' : 'add';
+
+			const isValueAArray = isArray(valueA);
+			const isValueAPlainObject = isPlainObject(valueA);
+
+			if (isValueAArray || isValueAPlainObject) { /* non-primitive values we can diff */
+				/* this is a bit complicated, but essentially if valueA and valueB are both arrays or plain objects, then
+				* we can diff those two values, if not, then we need to use an empty array or an empty object and diff
+				* the valueA with that */
+				const value = (isValueAArray && isArray(valueB)) || (isValueAPlainObject && isPlainObject(valueB)) ?
+					valueB : isValueAArray ?
+						[] : objectCreate(null);
+				const valueRecords = diff(valueA, value, options);
+				if (valueRecords.length) { /* only add if there are changes */
+					patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(value), diff(valueA, value, options)));
+				}
+			}
+			else if (isPrimative(valueA)) { /* primitive values can just be copied */
+				patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(valueA)));
+			}
+			else if (allowFunctionValues && typeof valueA === 'function') { /* catch functions that are in a but not in b */
+				patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(valueA)));
+			}
+			else {
+				throw new TypeError(`Value of property named "${name}" from first argument is not a primative, plain Object, or Array.`);
+			}
 		}
 		return patchRecords;
 	}, patchRecords);
 
 	/* look for keys in b that are not in a */
 	keys(b).reduce((patchRecords, name) => {
-		if (!hasOwnProperty.call(a, name)) {
+		if (!hasOwnProperty.call(a, name) && !isIgnoredProperty(name)) {
 			patchRecords.push(createPatchRecord('delete', name));
 		}
 		return patchRecords;
@@ -416,16 +433,15 @@ function resolveTargetValue(patchValue: any, targetValue: any): any {
  *
  * @param a The plain object or array to compare with
  * @param b The plain object or array to compare to
- * @param allowFunctions Allows functions as values of plain objects or arrays and treats them as equal based on `typeof`
- *                       comparison.  Defaults to `false`.
+ * @param options An options bag that allows configuration of the behaviour of `diff()`
  */
-export function diff(a: any, b: any, allowFunctions: boolean = false): (PatchRecord | SpliceRecord)[] {
+export function diff(a: any, b: any, options: DiffOptions = {}): (PatchRecord | SpliceRecord)[] {
 	if (typeof a !== 'object' || typeof b !== 'object') {
 		throw new TypeError('Arguments are not of type object.');
 	}
 
 	if (isArray(a)) {
-		return diffArray(a, b, allowFunctions);
+		return diffArray(a, b, options);
 	}
 
 	if (isArray(b)) {
@@ -436,7 +452,7 @@ export function diff(a: any, b: any, allowFunctions: boolean = false): (PatchRec
 		throw new TypeError('Arguments are not plain Objects or Arrays.');
 	}
 
-	return diffPlainObject(a, b, allowFunctions);
+	return diffPlainObject(a, b, options);
 }
 
 /**

@@ -20,6 +20,14 @@ function throwAssertionError(actual: any, expected: any, message?: string): neve
 }
 
 /**
+ * Options used to configure diff to correctly compare `DNode`s
+ */
+const diffOptions = {
+	allowFunctionValues: true,
+	ignoreProperties: [ 'bind' ]
+};
+
+/**
  * A function that asserts Dojo virtual DOM against expected virtual DOM.  When the actual and
  * expected differ, the function will throw an `AssertionError`.  It is expected to be used
  * in conjunction with `w` and `v` from `@dojo/widget-core/d` and would look something like this:
@@ -50,7 +58,7 @@ export default function assertRender(actual: DNode, expected: DNode, message?: s
 			/* The tags do not match */
 			throwAssertionError(actual.tag, expected.tag, message);
 		}
-		const delta = diff(actual.properties, expected.properties, true);
+		const delta = diff(actual.properties, expected.properties, diffOptions);
 		if (delta.length) {
 			/* The properties do not match */
 			throwAssertionError(actual.properties, expected.properties, message);
@@ -63,7 +71,7 @@ export default function assertRender(actual: DNode, expected: DNode, message?: s
 			/* The WNode does not share the same constructor */
 			throwAssertionError(actual.widgetConstructor, expected.widgetConstructor, message);
 		}
-		const delta = diff(actual.properties, expected.properties, true);
+		const delta = diff(actual.properties, expected.properties, diffOptions);
 		if (delta.length) {
 			/* There are differences in the properties between the two nodes */
 			throwAssertionError(actual.properties, expected.properties, message);
