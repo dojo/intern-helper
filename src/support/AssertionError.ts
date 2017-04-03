@@ -71,9 +71,9 @@ export interface AssertionErrorConstructor {
  * An extension of the JavaScript `Error` constructor for
  * assertion and validation scenarios.
  *
- * @param {String} message
- * @param {Object} properties to include (optional)
- * @param {callee} start stack function (optional)
+ * @param message (optional)
+ * @param _props properties to include (optional)
+ * @param ssf start stack function (optional)
  */
 function AssertionError(this: AssertionError, message?: string, _props?: any, ssf?: Function) {
 	const extend = exclude('name', 'message', 'stack', 'constructor', 'toJSON');
@@ -123,10 +123,9 @@ AssertionError.prototype.constructor = AssertionError;
 /**
  * Allow errors to be converted to JSON for static transfer.
  *
- * @param {Boolean} include stack (default: `true`)
- * @return {Object} object that can be `JSON.stringify`
+ * @param stack include stack (default: `true`)
  */
-AssertionError.prototype.toJSON = function (this: AssertionError, stack: boolean) {
+AssertionError.prototype.toJSON = function (this: AssertionError, stack?: boolean) {
 	const extend = exclude('constructor', 'toJSON', 'stack');
 	const props: { [prop: string]: any } = extend({ name: this.name }, this);
 

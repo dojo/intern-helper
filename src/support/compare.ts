@@ -323,7 +323,6 @@ function isPlainObject(value: any): value is Object {
 	return Boolean(
 		value &&
 		typeof value === 'object' &&
-		value !== null &&
 		(value.constructor === Object || value.constructor === undefined)
 	);
 }
