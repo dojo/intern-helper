@@ -10,9 +10,28 @@ const isArray = Array.isArray;
 const isFrozen = Object.isFrozen;
 const isSealed = Object.isSealed;
 
-interface DiffOptions {
+export type IgnorePropertyFunction = (name: string, a: any, b: any) => boolean;
+
+export interface DiffOptions {
+	/**
+	 * Allow functions to be values.  Values will be considered equal if the `typeof` both values are `function`.
+	 * When adding or updating the property, the value of the property of `a` will be used in the record, which
+	 * will be a reference to the function.
+	 */
 	allowFunctionValues?: boolean;
-	ignoreProperties?: (string | RegExp)[];
+
+	/**
+	 * An array of strings or regular expressions which flag certain properties to be ignored.  Alternatively
+	 * a function, which returns `true` to have the property ignored or `false` to diff the property.
+	 */
+	ignoreProperties?: (string | RegExp)[] | IgnorePropertyFunction;
+
+	/**
+	 * An array of strings or regular expressions which flag certain values to be ignored.  For flagged properties,
+	 * if the property is present in both `a` and `b` the value will be ignored.  If adding the property,
+	 * whatever the value of the property of `a` will be used, which could be a reference.
+	 */
+	ignorePropertyValues?: (string | RegExp)[] | IgnorePropertyFunction;
 }
 
 /**
@@ -249,13 +268,19 @@ function diffArray(a: any[], b: any, options: DiffOptions): SpliceRecord[] {
  * @param options An options bag that allows configuration of the behaviour of `diffPlainObject()`
  */
 function diffPlainObject(a: any, b: any, options: DiffOptions): PatchRecord[] {
-	const { allowFunctionValues = false, ignoreProperties = [] } = options;
+	const { allowFunctionValues = false, ignoreProperties = [], ignorePropertyValues = [] } = options;
 	const patchRecords: PatchRecord[] = [];
 
 	function isIgnoredProperty(name: string) {
-		return ignoreProperties.some((value) => {
+		return Array.isArray(ignoreProperties) ? ignoreProperties.some((value) => {
 			return typeof value === 'string' ? name === value : value.test(name);
-		});
+		}) : ignoreProperties(name, a, b);
+	}
+
+	function isIgnoredPropertyValue(name: string) {
+		return Array.isArray(ignorePropertyValues) ? ignorePropertyValues.some((value) => {
+			return typeof value === 'string' ? name === value : value.test(name);
+		}) : ignorePropertyValues(name, a, b);
 	}
 
 	/* look for keys in a that are different from b */
@@ -266,7 +291,8 @@ function diffPlainObject(a: any, b: any, options: DiffOptions): PatchRecord[] {
 			const bHasOwnProperty = hasOwnProperty.call(b, name);
 
 			if (bHasOwnProperty && (valueA === valueB ||
-				(allowFunctionValues && typeof valueA === 'function' && typeof valueB === 'function'))) { /* not different */
+				(allowFunctionValues && typeof valueA === 'function' && typeof valueB === 'function') ||
+				isIgnoredPropertyValue(name))) { /* not different */
 					/* when `allowFunctionValues` is true, functions are simply considered to be equal by `typeof` */
 					return patchRecords;
 			}
@@ -276,7 +302,7 @@ function diffPlainObject(a: any, b: any, options: DiffOptions): PatchRecord[] {
 			const isValueAArray = isArray(valueA);
 			const isValueAPlainObject = isPlainObject(valueA);
 
-			if (isValueAArray || isValueAPlainObject) { /* non-primitive values we can diff */
+			if ((isValueAArray || isValueAPlainObject) && !(isIgnoredPropertyValue(name))) { /* non-primitive values we can diff */
 				/* this is a bit complicated, but essentially if valueA and valueB are both arrays or plain objects, then
 				* we can diff those two values, if not, then we need to use an empty array or an empty object and diff
 				* the valueA with that */
@@ -288,10 +314,8 @@ function diffPlainObject(a: any, b: any, options: DiffOptions): PatchRecord[] {
 					patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(value), diff(valueA, value, options)));
 				}
 			}
-			else if (isPrimitive(valueA)) { /* primitive values can just be copied */
-				patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(valueA)));
-			}
-			else if (allowFunctionValues && typeof valueA === 'function') { /* catch functions that are in a but not in b */
+			else if (isPrimitive(valueA) || (allowFunctionValues && typeof valueA === 'function') || isIgnoredPropertyValue(name)) {
+				/* primitive values, functions values if allowed, or ignored property values can just be copied */
 				patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(valueA)));
 			}
 			else {

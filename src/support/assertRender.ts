@@ -1,7 +1,7 @@
 import { isHNode, isWNode } from '@dojo/widget-core/d';
 import { DNode } from '@dojo/widget-core/interfaces';
 import AssertionError from './AssertionError';
-import { diff } from './compare';
+import { diff, DiffOptions } from './compare';
 
 const RENDER_FAIL_MESSAGE = 'Render unexpected';
 
@@ -22,9 +22,9 @@ function throwAssertionError(actual: any, expected: any, message?: string): neve
 /**
  * Options used to configure diff to correctly compare `DNode`s
  */
-const diffOptions = {
+const diffOptions: DiffOptions = {
 	allowFunctionValues: true,
-	ignoreProperties: [ 'bind' ]
+	ignorePropertyValues: [ 'bind' ]
 };
 
 /**
