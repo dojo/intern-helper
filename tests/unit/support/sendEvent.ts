@@ -1,3 +1,4 @@
+import has from '@dojo/has/has';
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import sendEvent from '../../../src/support/sendEvent';
@@ -154,6 +155,27 @@ registerSuite({
 			});
 		}, Error, 'Cannot resolve to an element with selector');
 
+		document.body.removeChild(target);
+	},
+
+	'uncaught listener errors throw'(this: any) {
+		if (!has('host-node')) {
+			this.skip('Browsers detect this as a fatal suite error');
+		}
+
+		const target = document.createElement('div');
+		document.body.appendChild(target);
+
+		function thrower() {
+			throw new Error('foo');
+		}
+		target.addEventListener('click', thrower);
+
+		assert.throws(() => {
+			sendEvent(target, 'click');
+		}, Error, 'foo');
+
+		target.removeEventListener('click', thrower);
 		document.body.removeChild(target);
 	}
 });

@@ -92,6 +92,24 @@ export interface EventInitializer {
  * @param options A map of options to configure the event
  */
 export default function sendEvent(target: Element, type: string, options?: SendEventOptions) {
+
+	function dispatchEvent(target: Element, event: Event) {
+		let error: Error | undefined;
+
+		function catcher(e: ErrorEvent) {
+			e.preventDefault();
+			error = e.error;
+			return true;
+		}
+
+		window.addEventListener('error', catcher);
+		target.dispatchEvent(event);
+		window.removeEventListener('error', catcher);
+		if (error) {
+			throw error;
+		}
+	}
+
 	const {
 		eventClass = 'CustomEvent',
 		eventInit = {},
@@ -120,13 +138,13 @@ export default function sendEvent(target: Element, type: string, options?: SendE
 	if (selector) {
 		const selectorTarget = target.querySelector(selector);
 		if (selectorTarget) {
-			selectorTarget.dispatchEvent(event);
+			dispatchEvent(selectorTarget, event);
 		}
 		else {
 			throw new Error(`Cannot resolve to an element with selector "${selector}"`);
 		}
 	}
 	else {
-		target.dispatchEvent(event);
+		dispatchEvent(target, event);
 	}
 }
