@@ -49,12 +49,12 @@ interface SpyRenderMixin {
  * @param base The base class to add the render spy to
  * @param target An object with a property named `lastRender` which will be set to the result of the `render()` method
  */
-function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(base: T, target: { lastRender: DNode }): T & Constructor<SpyRenderMixin> {
+function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(base: T, target: { actualRender: (actual: DNode) => void }): T & Constructor<SpyRenderMixin> {
 
 	class SpyRender extends base {
 		@afterRender
 		spyRender(result: DNode): DNode {
-			target.lastRender = result;
+			target.actualRender(result);
 			return result;
 		}
 	};
@@ -70,6 +70,11 @@ class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> ext
 	private _widgetConstructor: W;
 	private _afterCreate: (element: HTMLElement) => void;
 
+	/**
+	 * A
+	 */
+	public assertionMessage: string | undefined;
+	public expectedRender: DNode | undefined;
 	public lastRender: DNode;
 
 	constructor(widgetConstructor: W, afterCreate: (element: HTMLElement) => void) {
@@ -79,6 +84,23 @@ class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> ext
 		this._afterCreate = afterCreate;
 	}
 
+	/**
+	 * Called by a harnessed widget's render spy, allowing potential assertion of the render
+	 * @param actual The render, just after `afterRender`
+	 */
+	actualRender(actual: DNode) {
+		this.lastRender = actual;
+		const { assertionMessage: message, expectedRender: expected } = this;
+		if (expected) {
+			this.expectedRender = undefined;
+			this.assertionMessage = undefined;
+			assertRender(actual, expected, message);
+		}
+	}
+
+	/**
+	 * Wrap the widget in a custom element
+	 */
 	render(): DNode {
 		return v(
 				ROOT_CUSTOM_ELEMENT_NAME,
@@ -185,7 +207,9 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	 * @param message Any message to be part of an error that gets thrown if the actual and expected do not match
 	 */
 	public expectRender(expected: DNode, message?: string): this {
-		assertRender(this.getRender(), expected, message);
+		this._widgetHarness.expectedRender = expected;
+		this._widgetHarness.assertionMessage = message;
+		this._render();
 		return this;
 	}
 
