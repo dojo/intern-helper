@@ -304,6 +304,34 @@ registerSuite({
 						w(MockWidget, { }, [ w(OtherWidget, {}), w(OtherWidget, {}) ])
 					);
 				}, AssertionError, 'Render unexpected');
+			},
+
+			'bind value ignored'() {
+				const bind = new MockWidget();
+				assertRender(
+					w(MockWidget, { bind }),
+					w(MockWidget, { bind: true })
+				);
+			},
+
+			'bind extra'() {
+				const bind = new MockWidget();
+				assert.throws(() => {
+					assertRender(
+						w(MockWidget, { bind }),
+						w(MockWidget, { })
+					);
+				});
+			},
+
+			'bind missing'() {
+				const bind = new MockWidget();
+				assert.throws(() => {
+					assertRender(
+						w(MockWidget, { }),
+						w(MockWidget, { bind })
+					);
+				});
 			}
 		},
 
