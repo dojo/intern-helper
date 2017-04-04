@@ -2,7 +2,7 @@ import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
 import harness from '../../src/harness';
 
-import { v } from '@dojo/widget-core/d';
+import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
 
@@ -15,6 +15,12 @@ interface MockWidgetProperties extends WidgetProperties {
 class MockWidget<P extends MockWidgetProperties> extends WidgetBase<P> {
 	render() {
 		return v('div.foo');
+	}
+}
+
+class SubWidget extends WidgetBase<WidgetProperties> {
+	render() {
+		return w(MockWidget, { bind: this, foo: 'bar' }, [ v('div'), w(MockWidget, { bind: this, foo: 'bar' } ) ]);
 	}
 }
 
@@ -40,8 +46,13 @@ registerSuite({
 	'getDom()'() {
 		const widget = harness(MockWidget);
 		const dom = widget.getDom();
-		assert.strictEqual(dom.tagName, 'DIV');
-		assert.strictEqual(dom.className, 'foo');
-		assert.strictEqual(dom.children.length, 0);
+		assert.strictEqual(dom.parentElement && dom.parentElement.innerHTML, '<div class="foo"></div>');
+		widget.destroy();
+	},
+
+	'decorate WNodes'() {
+		const widget = harness(SubWidget);
+		widget.expectRender(w(MockWidget, { foo: 'bar' }, [ v('div'), w(MockWidget, { foo: 'bar' } ) ]));
+		widget.destroy();
 	}
 });

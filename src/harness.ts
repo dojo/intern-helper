@@ -4,14 +4,16 @@ import Evented from '@dojo/core/Evented';
 import { createHandle } from '@dojo/core/lang';
 import { VNode } from '@dojo/interfaces/vdom';
 import { Constructor, DNode, WidgetProperties } from '@dojo/widget-core/interfaces';
-import { v, w } from '@dojo/widget-core/d';
+import { decorate, isWNode, v, w } from '@dojo/widget-core/d';
 import WidgetBase, { afterRender } from '@dojo/widget-core/WidgetBase';
 import cssTransitions from '@dojo/widget-core/animations/cssTransitions';
 import { dom, Projection, ProjectionOptions, VNodeProperties } from 'maquette';
 import assertRender from './support/assertRender';
 import sendEvent, { SendEventOptions } from './support/sendEvent';
 
-const ROOT_CUSTOM_ELEMENT_NAME = 'dojo--harness';
+const ROOT_CUSTOM_ELEMENT_NAME = 'test--harness';
+const WIDGET_STUB_CUSTOM_ELEMENT = 'test--widget-stub';
+const WIDGET_STUB_NAME_PROPERTY = 'test--widget-name';
 
 const EVENT_HANDLERS = [
 	'ontouchcancel',
@@ -39,6 +41,40 @@ const EVENT_HANDLERS = [
 	'onscroll',
 	'onsubmit'
 ];
+
+interface StubWidgetProperties extends WidgetProperties {
+	_stubTag: string;
+	_widgetName: string;
+}
+
+class StubWidget extends WidgetBase<StubWidgetProperties> {
+	render(): DNode {
+		const { _stubTag: tag, _widgetName: widgetName } = this.properties;
+		return v(tag, { [WIDGET_STUB_NAME_PROPERTY]: widgetName }, this.children);
+	}
+}
+
+/**
+ * Decorate a `DNode` where any `WNode`s are replaced with stubbed widgets
+ * @param target The `DNode` to decorate with stubbed widgets
+ */
+function stubRender(target: DNode): DNode {
+	decorate(
+		target,
+		(dNode) => {
+			if (isWNode(dNode)) {
+				const { widgetConstructor, properties } = dNode;
+				dNode.widgetConstructor = StubWidget;
+				(<StubWidgetProperties> properties)._stubTag = WIDGET_STUB_CUSTOM_ELEMENT;
+				(<StubWidgetProperties> properties)._widgetName = typeof widgetConstructor === 'string'
+					? widgetConstructor
+					: (<any> widgetConstructor).name || '<Anonymous>';
+			}
+		},
+		(dNode) => isWNode(dNode)
+	);
+	return target;
+}
 
 interface SpyRenderMixin {
 	spyRender(result: DNode): DNode;
