@@ -3,8 +3,9 @@ import 'pepjs';
 import Evented from '@dojo/core/Evented';
 import { createHandle } from '@dojo/core/lang';
 import { VNode } from '@dojo/interfaces/vdom';
-import { Constructor, DNode, WidgetProperties } from '@dojo/widget-core/interfaces';
-import { decorate, isWNode, v, w } from '@dojo/widget-core/d';
+import { includes } from '@dojo/shim/array';
+import { Constructor, DNode, HNode, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
+import { decorate, isHNode, isWNode, v, w } from '@dojo/widget-core/d';
 import WidgetBase, { afterRender } from '@dojo/widget-core/WidgetBase';
 import cssTransitions from '@dojo/widget-core/animations/cssTransitions';
 import { dom, Projection, ProjectionOptions, VNodeProperties } from 'maquette';
@@ -14,6 +15,8 @@ import sendEvent, { SendEventOptions } from './support/sendEvent';
 const ROOT_CUSTOM_ELEMENT_NAME = 'test--harness';
 const WIDGET_STUB_CUSTOM_ELEMENT = 'test--widget-stub';
 const WIDGET_STUB_NAME_PROPERTY = 'test--widget-name';
+
+let harnessId = 0;
 
 const EVENT_HANDLERS = [
 	'ontouchcancel',
@@ -49,8 +52,8 @@ interface StubWidgetProperties extends WidgetProperties {
 
 class StubWidget extends WidgetBase<StubWidgetProperties> {
 	render(): DNode {
-		const { _stubTag: tag, _widgetName: widgetName } = this.properties;
-		return v(tag, { [WIDGET_STUB_NAME_PROPERTY]: widgetName }, this.children);
+		const { bind, _stubTag: tag, _widgetName: widgetName } = this.properties;
+		return v(tag, { bind, [WIDGET_STUB_NAME_PROPERTY]: widgetName }, this.children);
 	}
 }
 
@@ -80,18 +83,22 @@ interface SpyRenderMixin {
 	spyRender(result: DNode): DNode;
 }
 
+interface SpyTarget {
+	actualRender(actual: DNode): void;
+}
+
 /**
  * A mixin that adds a spy to the render process
  * @param base The base class to add the render spy to
  * @param target An object with a property named `lastRender` which will be set to the result of the `render()` method
  */
-function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(base: T, target: { actualRender: (actual: DNode) => void }): T & Constructor<SpyRenderMixin> {
+function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(base: T, target: SpyTarget): T & Constructor<SpyRenderMixin> {
 
 	class SpyRender extends base {
-		@afterRender
+		@afterRender()
 		spyRender(result: DNode): DNode {
 			target.actualRender(result);
-			return result;
+			return stubRender(result);
 		}
 	};
 
@@ -105,13 +112,24 @@ function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(bas
 class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> extends WidgetBase<P> {
 	private _widgetConstructor: W;
 	private _afterCreate: (element: HTMLElement) => void;
+	private _id: string = ROOT_CUSTOM_ELEMENT_NAME + '-' + (++harnessId);
 
 	/**
-	 * A
+	 * A string that will be added to the AssertionError that is thrown if actual render does not match
+	 * expected render
 	 */
 	public assertionMessage: string | undefined;
+
+	/**
+	 * What `DNode` that is expected on the next render
+	 */
 	public expectedRender: DNode | undefined;
-	public lastRender: DNode;
+
+	/**
+	 * A reference to the previous render
+	 */
+	public lastRender: DNode | undefined;
+	public renderCount = 0;
 
 	constructor(widgetConstructor: W, afterCreate: (element: HTMLElement) => void) {
 		super();
@@ -126,6 +144,7 @@ class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> ext
 	 */
 	actualRender(actual: DNode) {
 		this.lastRender = actual;
+		this.renderCount++;
 		const { assertionMessage: message, expectedRender: expected } = this;
 		if (expected) {
 			this.expectedRender = undefined;
@@ -138,12 +157,48 @@ class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> ext
 	 * Wrap the widget in a custom element
 	 */
 	render(): DNode {
+		const { _afterCreate: afterCreate, _id: id, _widgetConstructor, properties } = this;
 		return v(
 				ROOT_CUSTOM_ELEMENT_NAME,
-				{ afterCreate: this._afterCreate },
-				[ w(this._widgetConstructor, this.properties) ]
+				{ afterCreate, id },
+				[ w(_widgetConstructor, properties) ]
 			);
 	}
+}
+
+/**
+ * Replace a child of DNode.
+ *
+ * *NOTE:* The replacement modify the passed `target` and does not return a new instance of the `DNode`.
+ * @param target The DNode to replace a child element on
+ * @param index A number of the index of a child, or a string with comma seperated indexes that would nagivate
+ * @param replacement The DNode to be replaced
+ */
+export function replaceChild(target: WNode | HNode, index: number | string, replacement: DNode): DNode {
+	if (typeof index === 'number') {
+		if (!target.children) {
+			target.children = [];
+		}
+		target.children[index] = replacement;
+	}
+	else {
+		const indexes = index.split(',').map(Number);
+		const lastIndex = indexes.pop()!;
+		const resolvedTarget = indexes.reduce((target, index) => {
+			if (!(isWNode(target) || isHNode(target)) || !target.children) {
+				throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
+			}
+			return target.children[index];
+		}, <DNode> target);
+		if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
+			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
+		}
+		if (!resolvedTarget.children) {
+			resolvedTarget.children = [];
+		}
+		resolvedTarget.children[lastIndex] = replacement;
+	}
+	return target;
 }
 
 /**
@@ -164,12 +219,18 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 		this._root = element;
 	}
 
+	private _classes: string[] = [];
 	private _projection: Projection | undefined;
 	private _projectionOptions: ProjectionOptions;
 	private _projectionRoot: HTMLElement;
 	private _root: HTMLElement | undefined;
 	private _widgetHarness: WidgetHarness<P, W>;
 	private _widgetHarnessRender: () => string | VNode | null;
+
+	/**
+	 * A *stub* of an event handler/listener that can be used when creating expected virtual DOM
+	 */
+	public listener = () => true;
 
 	/**
 	 * Harness a widget constructor, providing an API to interact with the widget for testing purposes.
@@ -237,6 +298,32 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	}
 
 	/**
+	 * Provide a set of classes that should be returned as a map.  It is stateful in that previous classes
+	 * will be negated in future calls.  Use `.resetClasses()` to clear the cache of classes.
+	 * @param classes A rest argument of classes to be returned as a map
+	 */
+	public classes(...classes: (string | null)[]): { [className: string ]: boolean } {
+		const result: { [className: string]: boolean } = {};
+
+		this._classes.reduce((result, className) => {
+			result[className] = false;
+			return result;
+		}, result);
+
+		classes.reduce((result, className) => {
+			if (className) {
+				result[className] = true;
+				if (!includes(this._classes, className)) {
+					this._classes.push(className);
+				}
+			}
+			return result;
+		}, result);
+
+		return result;
+	}
+
+	/**
 	 * Assert an expected virtual DOM (`DNode`) against what is actually being rendered.  Will throw if the expected does
 	 * not match the actual.
 	 * @param expected The expected render (`DNode`)
@@ -254,7 +341,7 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	 */
 	public getRender(): DNode {
 		this._render();
-		return this._widgetHarness.lastRender;
+		return this._widgetHarness.lastRender!;
 	}
 
 	/**
@@ -268,8 +355,20 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 		return <HTMLElement> this._root.firstChild;
 	}
 
+	/**
+	 * Set the properties that will be passed to the harnessed widget on the next render
+	 * @param properties The properties to set
+	 */
 	public setProperties(properties: P): this {
 		this._widgetHarness.setProperties(properties);
+		return this;
+	}
+
+	/**
+	 * Clear any cached classes that have been cached via calls to `.classes()`
+	 */
+	public resetClasses(): this {
+		this._classes = [];
 		return this;
 	}
 
@@ -281,9 +380,7 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	 */
 	public sendEvent(type: string, options?: SendEventOptions): this {
 		const root = this.getDom();
-		if (root) {
-			sendEvent(root, type, options);
-		}
+		sendEvent(root, type, options);
 		return this;
 	}
 }
