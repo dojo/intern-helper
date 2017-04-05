@@ -22,8 +22,8 @@ registerSuite({
 
 		function listener(evt: CustomEvent) {
 			assert.strictEqual(evt.type, 'foo', 'event type should be "foo"');
-			assert.isFalse(evt.bubbles, 'event should not bubble');
-			assert.isFalse(evt.cancelable, 'event should not be cancelable');
+			assert.isTrue(evt.bubbles, 'event should bubble by default');
+			assert.isTrue(evt.cancelable, 'event should be cancelable by default');
 
 			target.removeEventListener('foo', listener);
 			document.body.removeChild(target);
@@ -40,8 +40,8 @@ registerSuite({
 
 		function listener(evt: CustomEvent) {
 			assert.property(evt, 'preventDefault', 'preventDefault should be included');
-			assert.isTrue(evt.bubbles, 'event should bubble');
-			assert.isTrue(evt.cancelable, 'event should be cancelable');
+			assert.isFalse(evt.bubbles, 'event should not bubble');
+			assert.isFalse(evt.cancelable, 'event not be cancelable');
 
 			target.removeEventListener('foo', listener);
 			document.body.removeChild(target);
@@ -51,8 +51,8 @@ registerSuite({
 
 		sendEvent(target, 'foo', {
 			eventInit: {
-				bubbles: true,
-				cancelable: true
+				bubbles: false,
+				cancelable: false
 			}
 		});
 	},

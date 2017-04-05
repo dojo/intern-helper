@@ -1,5 +1,5 @@
 import has, { add as hasAdd } from '@dojo/core/has';
-import { assign } from '@dojo/core/lang';
+import { assign, deepAssign } from '@dojo/core/lang';
 
 hasAdd('customevent-constructor', () => {
 	try {
@@ -64,7 +64,7 @@ export type EventClass =
 	'WebGLContextEvent' |
 	'WheelEvent';
 
-export interface SendEventOptions {
+export interface SendEventOptions<I extends EventInit> {
 	/**
 	 * The event class to use to create the event, defaults to `CustomEvent`
 	 */
@@ -73,7 +73,7 @@ export interface SendEventOptions {
 	/**
 	 * An object which is used to initialise the event
 	 */
-	eventInit?: EventInit;
+	eventInit?: I;
 
 	/**
 	 * A CSS selector string, used to query the target to identify the element to
@@ -91,7 +91,7 @@ export interface EventInitializer {
  * @param type The event type to dispatch
  * @param options A map of options to configure the event
  */
-export default function sendEvent(target: Element, type: string, options?: SendEventOptions) {
+export default function sendEvent<I extends EventInit>(target: Element, type: string, options?: SendEventOptions<I>) {
 
 	function dispatchEvent(target: Element, event: Event) {
 		let error: Error | undefined;
@@ -112,29 +112,30 @@ export default function sendEvent(target: Element, type: string, options?: SendE
 
 	const {
 		eventClass = 'CustomEvent',
-		eventInit = {},
+		eventInit = {} as EventInit,
 		selector = ''
 	} = options || {};
-	let event: Event;
+	let event: CustomEvent;
+	assign(eventInit, {
+		bubbles: 'bubbles' in eventInit ? eventInit.bubbles : true,
+		cancelable: 'cancelable' in eventInit ? eventInit.cancelable : true
+	});
+	const { bubbles, cancelable, ...initProps } = eventInit;
 	if (has('customevent-constructor')) {
-		if (eventClass in window) {
-			event = new ((<any> window)[eventClass] as typeof Event)(type, eventInit);
-		}
-		else {
-			const { bubbles, cancelable, ...initProps } = eventInit;
-			event = new window.CustomEvent(type, { bubbles, cancelable });
-			assign(event, initProps);
-		}
+		const ctorName = eventClass in window ? eventClass : 'CustomEvent';
+		event = new ((<any> window)[ctorName] as typeof CustomEvent)(type, eventInit);
 	}
 	else {
 		/* because the arity varies too greatly to be able to properly call all the event types, we will
 		 * only support CustomEvent for those platforms that don't support event constructors, which is
 		 * essentially IE11 */
 		event = document.createEvent('CustomEvent');
-		const { bubbles = false, cancelable = false, ...initProps } = eventInit;
-		(event as CustomEvent).initCustomEvent(type, bubbles, cancelable, {});
-		assign(event, initProps);
+		(event as CustomEvent).initCustomEvent(type, bubbles!, cancelable!, {});
 	}
+	try {
+		deepAssign(event, initProps);
+	}
+	catch (e) { /* swallowing assignment errors when trying to overwrite native event properties */ }
 	if (selector) {
 		const selectorTarget = target.querySelector(selector);
 		if (selectorTarget) {

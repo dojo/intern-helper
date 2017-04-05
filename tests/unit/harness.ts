@@ -1,6 +1,6 @@
 import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
-import harness, { replaceChild } from '../../src/harness';
+import harness, { assignChildProperties, assignProperties, replaceChild, replaceChildProperties, replaceProperties } from '../../src/harness';
 
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties } from '@dojo/widget-core/interfaces';
@@ -168,6 +168,30 @@ registerSuite({
 		widget.destroy();
 	},
 
+	'assignChildProperties()': {
+		'by index'() {
+			const actual = v('div', {}, [ null, v('a', { href: '#link' }) ]);
+
+			assertRender(actual, v('div', {}, [ null, v('a', { href: '#link' }) ]));
+
+			assignChildProperties(actual, 1, { target: '_blank' });
+
+			assertRender(actual, v('div', {}, [ null, v('a', { href: '#link', target: '_blank' }) ]));
+		}
+	},
+
+	'assignProperties()': {
+		'basic'() {
+			const actual = v('div', { styles: { 'color': 'blue' } }, [ null, v('a', { href: '#link' }) ]);
+
+			assertRender(actual, v('div', { styles: { 'color': 'blue' } }, [ null, v('a', { href: '#link' }) ]));
+
+			assignProperties(actual, { styles: { 'font-weight': 'bold' } });
+
+			assertRender(actual, v('div', { styles: { 'font-weight': 'bold' } }, [ null, v('a', { href: '#link' }) ]));
+		}
+	},
+
 	'replaceChild()': {
 		'by index'() {
 			const actual = v('div', {}, [ null, v('a', { href: '#link' }) ]);
@@ -215,6 +239,30 @@ registerSuite({
 			assert.throws(() => {
 				replaceChild(actual, '0,0,0', 'bar');
 			}, TypeError, 'Index of "0,0,0" is not resolving to a valid target');
+		}
+	},
+
+	'replaceChildProperties()': {
+		'by index'() {
+			const actual = v('div', {}, [ null, v('a', { href: '#link' }) ]);
+
+			assertRender(actual, v('div', {}, [ null, v('a', { href: '#link' }) ]));
+
+			replaceChildProperties(actual, 1, { target: '_blank' });
+
+			assertRender(actual, v('div', {}, [ null, v('a', { target: '_blank' }) ]));
+		}
+	},
+
+	'replaceProperties()': {
+		'basic'() {
+			const actual = v('div', { styles: { 'color': 'blue' } }, [ null, v('a', { href: '#link' }) ]);
+
+			assertRender(actual, v('div', { styles: { 'color': 'blue' } }, [ null, v('a', { href: '#link' }) ]));
+
+			replaceProperties(actual, { classes: { 'foo': true } });
+
+			assertRender(actual, v('div', { classes: { 'foo': true } }, [ null, v('a', { href: '#link' }) ]));
 		}
 	}
 });
