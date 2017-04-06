@@ -52,15 +52,13 @@ const EVENT_HANDLERS = [
 function stubRender(target: DNode): DNode {
 	decorate(
 		target,
-		(dNode) => {
-			if (isWNode(dNode)) {
-				const { widgetConstructor, properties } = dNode;
-				dNode.widgetConstructor = StubWidget;
-				(<StubWidgetProperties> properties)._stubTag = WIDGET_STUB_CUSTOM_ELEMENT;
-				(<StubWidgetProperties> properties)._widgetName = typeof widgetConstructor === 'string'
-					? widgetConstructor
-					: (<any> widgetConstructor).name || '<Anonymous>';
-			}
+		(dNode: WNode) => {
+			const { widgetConstructor, properties } = dNode;
+			dNode.widgetConstructor = StubWidget;
+			(<StubWidgetProperties> properties)._stubTag = WIDGET_STUB_CUSTOM_ELEMENT;
+			(<StubWidgetProperties> properties)._widgetName = typeof widgetConstructor === 'string'
+				? widgetConstructor
+				: (<any> widgetConstructor).name || '<Anonymous>';
 		},
 		(dNode) => isWNode(dNode)
 	);
@@ -180,6 +178,7 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	private _attached = false;
 
 	private _afterCreate = (element: HTMLElement) => { /* using a lambda property here creates a bound function */
+		/* istanbul ignore next: difficult to create test conditions */
 		if (this._root && this._root.parentNode) { /* just in case there was already a root node */
 			this._root.parentNode.removeChild(this._root);
 			this._root = undefined;
@@ -204,7 +203,7 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	private _properties: P;
 
 	private _render = () => { /* using a lambda property here creates a bound function */
-		this._projection && this._projection.update(this._getVNode());
+		this._projection && this._projection.update(this._widgetHarnessRender() as VNode);
 	}
 
 	private _root: HTMLElement | undefined;
@@ -237,10 +236,6 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	}
 
 	private _attach(): boolean {
-		if (this._attached) {
-			return this._attached;
-		}
-
 		this.own(createHandle(() => {
 			if (!this._attached) {
 				return;
@@ -253,7 +248,7 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 		this.own(this._widgetHarness.on('properties:changed', this._widgetHarness.invalidate));
 		this.own(this._widgetHarness.on('invalidated', this._render));
 
-		this._projection = dom.append(this._projectionRoot, this._getVNode(), this._projectionOptions);
+		this._projection = dom.append(this._projectionRoot, this._widgetHarnessRender() as VNode, this._projectionOptions);
 		this._attached = true;
 		return this._attached;
 	}
@@ -271,14 +266,6 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 				eventHandler.apply(properties.bind || this, args);
 			});
 		}
-	}
-
-	private _getVNode(): VNode {
-		const vnode = this._widgetHarness.__render__();
-		if (typeof vnode === 'string' || vnode === null) {
-			throw new TypeError('Render cannot be string or null');
-		}
-		return vnode;
 	}
 
 	private _invalidate(): void {
@@ -450,11 +437,11 @@ export function replaceChild(target: WNode | HNode, index: number | string, repl
 	else {
 		const indexes = index.split(',').map(Number);
 		const lastIndex = indexes.pop()!;
-		const resolvedTarget = indexes.reduce((target, index) => {
+		const resolvedTarget = indexes.reduce((target, idx) => {
 			if (!(isWNode(target) || isHNode(target)) || !target.children) {
 				throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 			}
-			return target.children[index];
+			return target.children[idx];
 		}, <DNode> target);
 		if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
 			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
@@ -470,23 +457,20 @@ export function replaceChild(target: WNode | HNode, index: number | string, repl
 function resolveChild(target: WNode | HNode, index: number | string): DNode {
 	if (typeof index === 'number') {
 		if (!target.children) {
-			target.children = [];
+			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 		}
 		return target.children[index];
 	}
 	const indexes = index.split(',').map(Number);
 	const lastIndex = indexes.pop()!;
-	const resolvedTarget = indexes.reduce((target, index) => {
+	const resolvedTarget = indexes.reduce((target, idx) => {
 		if (!(isWNode(target) || isHNode(target)) || !target.children) {
 			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 		}
-		return target.children[index];
+		return target.children[idx];
 	}, <DNode> target);
-	if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
+	if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget)) || !resolvedTarget.children) {
 		throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
-	}
-	if (!resolvedTarget.children) {
-		resolvedTarget.children = [];
 	}
 	return resolvedTarget.children[lastIndex];
 }
