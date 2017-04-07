@@ -14,7 +14,7 @@ import sendEvent, { SendEventOptions } from './support/sendEvent';
 
 const ROOT_CUSTOM_ELEMENT_NAME = 'test--harness';
 const WIDGET_STUB_CUSTOM_ELEMENT = 'test--widget-stub';
-const WIDGET_STUB_NAME_PROPERTY = 'test--widget-name';
+const WIDGET_STUB_NAME_PROPERTY = 'data--widget-name';
 
 let harnessId = 0;
 
@@ -348,24 +348,6 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	}
 
 	/**
-	 * Set the children that will be used when rendering the harnessed widget
-	 * @param children The children to be set on the harnessed widget
-	 */
-	public setChildren(...children: DNode[]): this {
-		this._children = children;
-		return this;
-	}
-
-	/**
-	 * Set the properties that will be passed to the harnessed widget on the next render
-	 * @param properties The properties to set
-	 */
-	public setProperties(properties: P): this {
-		this._properties = properties;
-		return this;
-	}
-
-	/**
 	 * Clear any cached classes that have been cached via calls to `.classes()`
 	 */
 	public resetClasses(): this {
@@ -386,6 +368,24 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
 	public sendEvent<I extends EventInit>(type: string, options: HarnessSendEventOptions<I> = {}): this {
 		const { target = this.getDom() } = options;
 		sendEvent(target, type, options);
+		return this;
+	}
+
+	/**
+	 * Set the children that will be used when rendering the harnessed widget
+	 * @param children The children to be set on the harnessed widget
+	 */
+	public setChildren(...children: DNode[]): this {
+		this._children = children;
+		return this;
+	}
+
+	/**
+	 * Set the properties that will be passed to the harnessed widget on the next render
+	 * @param properties The properties to set
+	 */
+	public setProperties(properties: P): this {
+		this._properties = properties;
 		return this;
 	}
 }

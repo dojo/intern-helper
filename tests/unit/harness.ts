@@ -57,12 +57,12 @@ registerSuite({
 			assert.strictEqual(dom.children[0].tagName, 'TEST--WIDGET-STUB');
 			assert.strictEqual(dom.children[1].tagName, 'TEST--WIDGET-STUB');
 			if (hasFunctionName) {
-				assert.strictEqual(dom.children[0].getAttribute('test--widget-name'), 'MockWidget');
+				assert.strictEqual(dom.children[0].getAttribute('data--widget-name'), 'MockWidget');
 			}
 			else {
-				assert.strictEqual(dom.children[0].getAttribute('test--widget-name'), '<Anonymous>');
+				assert.strictEqual(dom.children[0].getAttribute('data--widget-name'), '<Anonymous>');
 			}
-			assert.strictEqual(dom.children[1].getAttribute('test--widget-name'), 'widget');
+			assert.strictEqual(dom.children[1].getAttribute('data--widget-name'), 'widget');
 			widget.destroy();
 		},
 
@@ -294,8 +294,8 @@ registerSuite({
 				protected onClick(e: MouseEvent): boolean {
 					clickCount++;
 					e.preventDefault();
-					if (hasFunctionName) {
-						assert.strictEqual((<any> e.constructor).name, 'CustomEvent', 'should be of class custom event');
+					if ('CustomEvent' in window) {
+						assert.instanceOf(e, window['CustomEvent'], 'should be of class custom event');
 					}
 					assert.strictEqual(e.type, 'click', 'should be type of "click"');
 					assert.strictEqual(e.target, dom, 'the target should be the rendered dom');
@@ -331,8 +331,8 @@ registerSuite({
 				protected onClick(e: MouseEvent): boolean {
 					clickCount++;
 					e.preventDefault();
-					if (hasFunctionName) {
-						assert.strictEqual((<any> e.constructor).name, 'CustomEvent', 'should be of class custom event');
+					if ('CustomEvent' in window) {
+						assert.instanceOf(e, window['CustomEvent'], 'should be of class custom event');
 					}
 					assert.strictEqual(e.type, 'click', 'should be type of "click"');
 					assert.strictEqual(e.target, target, 'the target should be the rendered dom firstchild');
