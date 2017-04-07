@@ -2,7 +2,6 @@
 import '../../src/support/loadJsdom';
 
 /* Modules to test */
-import './ClientErrorCollector';
 import './harness';
 import './main';
 import './intern/all';

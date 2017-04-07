@@ -1,5 +1,5 @@
-import ClientErrorCollector from './ClientErrorCollector';
 import harness, { assignChildProperties, assignProperties, replaceChild, replaceChildProperties, replaceProperties } from './harness';
+import ClientErrorCollector from './intern/ClientErrorCollector';
 import assertRender from './support/assertRender';
 import sendEvent from './support/sendEvent';
 
