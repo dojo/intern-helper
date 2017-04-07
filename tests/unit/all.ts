@@ -5,4 +5,5 @@ import '../../src/support/loadJsdom';
 import './ClientErrorCollector';
 import './harness';
 import './main';
+import './intern/all';
 import './support/all';

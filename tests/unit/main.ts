@@ -4,7 +4,7 @@ import * as main from '../../src/main';
 import ClientErrorCollector from '../../src/ClientErrorCollector';
 import harness, { assignChildProperties, assignProperties, replaceChild, replaceChildProperties, replaceProperties } from '../../src/harness';
 import assertRender from '../../src/support/assertRender';
-import sendEvent from '../../src/support/sendEvent';
+import ClientErrorCollector from '../../src/intern/ClientErrorCollector';
 
 registerSuite({
 	name: 'main',
