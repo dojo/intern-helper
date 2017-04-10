@@ -110,7 +110,7 @@ function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(bas
 class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> extends WidgetBase<P> {
 	private _widgetConstructor: W;
 	private _afterCreate: (element: HTMLElement) => void;
-	private _id: string = ROOT_CUSTOM_ELEMENT_NAME + '-' + (++harnessId);
+	private _id = ROOT_CUSTOM_ELEMENT_NAME + '-' + (++harnessId);
 
 	/**
 	 * A string that will be added to the AssertionError that is thrown if actual render does not match
