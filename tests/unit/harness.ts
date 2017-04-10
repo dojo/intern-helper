@@ -246,7 +246,7 @@ registerSuite({
 
 			const widget = harness(ParentWidget);
 
-			widget.setChildren(v('span'), v('a', { href: 'http://dojo.io' }));
+			widget.setChildren([ v('span'), v('a', { href: 'http://dojo.io' }) ]);
 
 			widget.expectRender(v('div', {}, [
 				v('span'),

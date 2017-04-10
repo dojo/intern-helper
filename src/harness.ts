@@ -375,7 +375,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 	 * Set the children that will be used when rendering the harnessed widget
 	 * @param children The children to be set on the harnessed widget
 	 */
-	public setChildren(...children: DNode[]): this {
+	public setChildren(children: DNode[]): this {
 		this._children = children;
 		return this;
 	}
