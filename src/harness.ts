@@ -4,7 +4,7 @@ import Evented from '@dojo/core/Evented';
 import { assign, createHandle } from '@dojo/core/lang';
 import { VNode } from '@dojo/interfaces/vdom';
 import { includes } from '@dojo/shim/array';
-import { Constructor, DNode, HNode, VirtualDomProperties, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
+import { Constructor, DNode, HNode, VirtualDomProperties, WidgetBaseInterface, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
 import { decorate, isHNode, isWNode, v, w } from '@dojo/widget-core/d';
 import WidgetBase, { afterRender } from '@dojo/widget-core/WidgetBase';
 import cssTransitions from '@dojo/widget-core/animations/cssTransitions';
@@ -90,7 +90,7 @@ interface SpyTarget {
  * @param base The base class to add the render spy to
  * @param target An object with a property named `lastRender` which will be set to the result of the `render()` method
  */
-function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(base: T, target: SpyTarget): T & Constructor<SpyRenderMixin> {
+function SpyRenderMixin<T extends Constructor<WidgetBaseInterface<WidgetProperties>>>(base: T, target: SpyTarget): T & Constructor<SpyRenderMixin> {
 
 	class SpyRender extends base {
 		@afterRender()
@@ -107,7 +107,7 @@ function SpyRenderMixin<T extends Constructor<WidgetBase<WidgetProperties>>>(bas
  * A private class that is used to actually render the widget and keep track of the last render by
  * the harnessed widget.
  */
-class WidgetHarness<P extends WidgetProperties, W extends typeof WidgetBase> extends WidgetBase<P> {
+class WidgetHarness<P extends WidgetProperties, W extends Constructor<WidgetBaseInterface<P>>> extends WidgetBase<P> {
 	private _widgetConstructor: W;
 	private _afterCreate: (element: HTMLElement) => void;
 	private _id = ROOT_CUSTOM_ELEMENT_NAME + '-' + (++harnessId);
@@ -174,7 +174,7 @@ export interface HarnessSendEventOptions<I extends EventInit> extends SendEventO
 /**
  * Harness a widget constructor, providing an API to interact with the widget for testing purposes.
  */
-export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> extends Evented {
+export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBaseInterface<P>>> extends Evented {
 	private _attached = false;
 
 	private _afterCreate = (element: HTMLElement) => { /* using a lambda property here creates a bound function */
@@ -395,7 +395,7 @@ export class Harness<P extends WidgetProperties, W extends typeof WidgetBase> ex
  * @param widgetConstructor The constructor function/class of widget that should be harnessed.
  * @param projectionRoot The root where the harness should append itself to the DOM.  Default to `document.body`
  */
-export default function harness<P extends WidgetProperties, W extends typeof WidgetBase>(widgetConstructor: W, projectionRoot?: HTMLElement): Harness<P, W> {
+export default function harness<P extends WidgetProperties, W extends Constructor<WidgetBaseInterface<P>>>(widgetConstructor: W, projectionRoot?: HTMLElement): Harness<P, W> {
 	return new Harness<P, W>(widgetConstructor, projectionRoot);
 }
 
