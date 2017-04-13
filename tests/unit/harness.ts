@@ -1,7 +1,20 @@
 import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
-import harness, { assignChildProperties, assignProperties, replaceChild, replaceChildProperties, replaceProperties } from '../../src/harness';
+import harness, {
+	assignChildProperties,
+	assignProperties,
+	replaceChild,
+	replaceChildProperties,
+	replaceProperties,
+	StubWidgetMapKey,
+	StubWidgetMapValue,
+	StubWidget,
+	StubWidgetProperties,
+	WIDGET_STUB_NAME_PROPERTY
+} from '../../src/harness';
 
+import Map from '@dojo/shim/Map';
+import Set from '@dojo/shim/Set';
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
@@ -24,9 +37,36 @@ class MockWidget<P extends MockWidgetProperties> extends WidgetBase<P> {
 	}
 }
 
+interface MockInputWidgetProperties extends WidgetProperties {
+	onInput?(event: Event): void;
+}
+
+class MockTextInputWidget extends WidgetBase<MockInputWidgetProperties> {
+	private _onInput(event: Event) { this.properties.onInput && this.properties.onInput(event); }
+
+	render() {
+		return v('input', { bind: this, type: 'text', oninput: this._onInput });
+	}
+}
+
 class SubWidget extends WidgetBase<WidgetProperties> {
 	render() {
 		return v('div', { }, [ w(MockWidget, { bind: this, key: 'first' }), w('widget', { bind: this, key: 'second' }) ]);
+	}
+}
+
+class StubWidget1 extends StubWidget<MockInputWidgetProperties & StubWidgetProperties> {
+	private _onInput (event: Event) { this.properties.onInput && this.properties.onInput(event); }
+
+	render() {
+		const { _widgetName: widgetName } = this.properties;
+
+		return v('input', {
+			bind: this,
+			type: 'text',
+			oninput: this._onInput,
+			[WIDGET_STUB_NAME_PROPERTY]: widgetName
+		});
 	}
 }
 
@@ -86,19 +126,22 @@ registerSuite({
 			let clickCalled = false;
 			let fooCalled = false;
 
+			function onclick(this: any) {
+				clickCalled = true;
+				assert.isDefined(this);
+			}
+
+			function onfoo(this: any) {
+				fooCalled = true;
+				assert.isDefined(this);
+			}
+
 			class MisboundWidget extends WidgetBase<WidgetProperties> {
 				render() {
 					return v('div', {
 						bind: undefined,
-						onclick(this: any) {
-							clickCalled = true;
-							assert(this);
-						},
-
-						onfoo(this: any) {
-							fooCalled = true;
-							assert(this);
-						}
+						onclick,
+						onfoo
 					});
 				}
 			}
@@ -115,7 +158,7 @@ registerSuite({
 			const div = document.createElement('div');
 			document.body.appendChild(div);
 
-			const widget = harness(MockWidget, div);
+			const widget = harness(MockWidget, undefined, div);
 			const parentElement = widget.getDom().parentElement!;
 			assert.strictEqual(parentElement.parentElement, div, 'the root of the harness should be a child of the div');
 			widget.destroy();
@@ -136,6 +179,167 @@ registerSuite({
 			assert.throws(() => {
 				widget.getDom();
 			}, Error, 'No root node has been rendered');
+
+			widget.destroy();
+		}
+	},
+
+	'map stub rendering': {
+		'passing array'() {
+			let onInputCount1 = 0;
+			let onInputCount2 = 0;
+
+			class LabelInput extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', [
+						v('label', { for: 'widget' }, [ 'here is my handle' ]),
+						w(MockTextInputWidget, { key: 'one', onInput() { onInputCount1++; } }),
+						w('text-input', { key: 'two', onInput() { onInputCount2++; } })
+					]);
+				}
+			}
+
+			const widget = harness(LabelInput, [ [ MockTextInputWidget, StubWidget1 ], [ 'text-input', StubWidget1 ] ]);
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(2)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should have been called');
+			assert.strictEqual(onInputCount2, 0, 'listener should not have been called');
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(3)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should not have been called');
+			assert.strictEqual(onInputCount2, 1, 'listener should have been called');
+
+			widget.destroy();
+		},
+
+		'passing map'() {
+			let onInputCount1 = 0;
+			let onInputCount2 = 0;
+
+			class LabelInput extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', [
+						v('label', { for: 'widget' }, [ 'here is my handle' ]),
+						w(MockTextInputWidget, { key: 'one', onInput() { onInputCount1++; } }),
+						w('text-input', { key: 'two', onInput() { onInputCount2++; } })
+					]);
+				}
+			}
+
+			const stubMap = new Map<StubWidgetMapKey, StubWidgetMapValue>();
+			stubMap.set(MockTextInputWidget, StubWidget1);
+			stubMap.set('text-input', StubWidget1);
+
+			const widget = harness(LabelInput, stubMap);
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(2)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should have been called');
+			assert.strictEqual(onInputCount2, 0, 'listener should not have been called');
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(3)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should not have been called');
+			assert.strictEqual(onInputCount2, 1, 'listener should have been called');
+
+			widget.destroy();
+		},
+
+		'passing set'() {
+			let onInputCount1 = 0;
+			let onInputCount2 = 0;
+
+			class LabelInput extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', [
+						v('label', { for: 'widget' }, [ 'here is my handle' ]),
+						w(MockTextInputWidget, { key: 'one', onInput() { onInputCount1++; } }),
+						w('text-input', { key: 'two', onInput() { onInputCount2++; } })
+					]);
+				}
+			}
+
+			const stubSet = new Set<[StubWidgetMapKey, StubWidgetMapValue]>();
+			stubSet.add([ MockTextInputWidget, StubWidget1 ]);
+			stubSet.add([ 'text-input', StubWidget1 ]);
+
+			const widget = harness(LabelInput, stubSet);
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(2)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should have been called');
+			assert.strictEqual(onInputCount2, 0, 'listener should not have been called');
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(3)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should not have been called');
+			assert.strictEqual(onInputCount2, 1, 'listener should have been called');
+
+			widget.destroy();
+		},
+
+		'using .map()'() {
+			let onInputCount1 = 0;
+			let onInputCount2 = 0;
+
+			class LabelInput extends WidgetBase<WidgetProperties & { foo: string }> {
+				render() {
+					return v('div', { 'data-foo': this.properties.foo }, [
+						v('label', { for: 'widget' }, [ 'here is my handle' ]),
+						w(MockTextInputWidget, { key: 'one', onInput() { onInputCount1++; } }),
+						w('text-input', { key: 'two', onInput() { onInputCount2++; } })
+					]);
+				}
+			}
+
+			const widget = harness(LabelInput);
+
+			widget.setProperties({
+				foo: 'bar'
+			});
+
+			widget.map(MockTextInputWidget, StubWidget1);
+			const handle = widget.map('text-input', StubWidget1);
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(2)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should have been called');
+			assert.strictEqual(onInputCount2, 0, 'listener should not have been called');
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(3)'
+			});
+
+			assert.strictEqual(onInputCount1, 1, 'listener should not have been called');
+			assert.strictEqual(onInputCount2, 1, 'listener should have been called');
+
+			handle.destroy();
+
+			widget.setProperties({
+				foo: 'baz'
+			});
+
+			widget.sendEvent('input', {
+				selector: ':nth-child(3)'
+			});
+
+			assert.strictEqual(onInputCount2, 1, 'listener should have been called');
 
 			widget.destroy();
 		}

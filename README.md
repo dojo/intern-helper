@@ -60,8 +60,9 @@ registerSuite({
 });
 ```
 
-`harness()` requires a class which has extended from `WidgetBase` as the first argument and can take an optional second argument
-which is an `HTMLElement` to append the root of the harness to.  By default, it appends its root as the last child of `document.body`.
+`harness()` requires a class which has extended from `WidgetBase` as the first argument.  There is an optional second argument which
+is a iterable that provides a map of sub widget constructors to substitute.  There is a thrid optional argument which is an
+`HTMLElement` to append the root of the harness to.  By default, it appends its root as the last child of `document.body`.
 
 #### .listener
 
@@ -194,6 +195,11 @@ replaced with stubs of virtual DOM.
 
 Return the root node of the rendered DOM of the widget.  This allows introspection or manipulation of the actual DOM.
 
+#### .map()
+
+Allows subtitution of the default widget stub with a custom widget stub which allows additinal stub/mock/spy functionality in
+harnessing widget mocks.  See below for [sub-widget stubbing](#sub-widget-stubbing).
+
 #### .resetClasses()
 
 Reset the classes to "forget" any previously asserted classes.
@@ -273,6 +279,77 @@ widget.setProperties({
 });
 
 widget.expectRender(v('div', { classes.widget(css.root, css.open) }));
+```
+
+### Sub Widget Stubbing
+
+By default, any sub-widgets (virtual DOM returned from `w()` or a `WNode`) are subtituted with a special class of widget called
+`StubWidget` which renders as a node that looks like: `<test--widget-stub data--widget-class="MySubWidget"></test--widget-stub>`.
+In most cases this should be sufficient for testing the harnessed widget, but if the enclosing harnessed widget is going to
+inject something into the sub widget on render, then you may need to make some assertions against this.
+
+Therefore the `harness` module has a few exports to facilitate this as well as an API for specifying the mapping:
+
+- `StubWidget` - A subclass of `WidgetBase` which can be further extended to stub out behaviour of a widget for testing purposes.
+  This is the class that is substituted by default when rendering a harnessed widget.
+- `StubWidgetProperties` - Contains the additional `WidgetProperties` that facilitate the rendering of the `StubWidget`.
+- `StubWidgetMapKey` - A type that represents acceptable widget constructors.  Intended to be used when passing the map as an interable.
+- `StubWidgetMapValue` - A type that represents acceptable stub widget constructors.  Itended to be used when passing the map as an iterable.
+
+The easiest way to provide mappings of widget to stub is to use the `.map()` method on the harness instance.  For example, assuming you
+have a widget which provides a labelled text input, where you want to *trigger* the `onInput` of the sub widget, you would do something like
+this:
+
+```typescript
+import LabelledTextInput from `../../src/LabelledTextInput`;
+import TextInput from `@dojo/widgets/textinput/TextInput`;
+import harness, { StubWidget } from `@dojo/test-extras/harness`;
+
+class StubTextInput extends StubWidget<MockInputWidgetProperties & StubWidgetProperties> {
+    private _onInput (event: Event) { this.properties.onInput && this.properties.onInput(event); }
+
+    render() {
+        const { _widgetName: widgetName } = this.properties;
+
+        return v('input', {
+            bind: this,
+            type: 'text',
+            oninput: this._onInput,
+            [WIDGET_STUB_NAME_PROPERTY]: widgetName
+        });
+    }
+}
+
+const widget = harness(LabelledTextInput);
+
+widget.map(TextInput, StubTextInput);
+
+widget.sendEvent('input', {
+    selector: ':last-child'
+});
+
+/* Assert that `onInput` was called in wrapping widget */
+```
+
+The `.map()` method returns a `Handle` which can be used to remove a mapped subtitution once added, which will cause the next render to
+revert to stubbing the default `StubWidget`:
+
+```typescript
+const handle = widget.map(TextInput, StubTextInput);
+
+handle.destroy(); // the default StubWidget will be substituted instead of StubTextInput on the next render
+```
+
+In addition, the map of substituions can be passed as an iterable as the second argument to the `harness()` function.  This is inteded
+to make it easier to _reuse_ maps of substituions in multple tests.  For example:
+
+```typescript
+import harness, { StubWidgetKey, StubWidgetValue } from `@dojo/test-extras/harness`;
+
+const stubWidgetMap = Map<StubWidgetKey, StubWidgetValue>();
+stubWidgetMap.set(TextInput, StubTextInput);
+
+harness(LabelledTextInput, stubWidgetMap);
 ```
 
 ### Virtual DOM Helper Functions

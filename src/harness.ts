@@ -2,8 +2,10 @@ import 'pepjs';
 
 import Evented from '@dojo/core/Evented';
 import { assign, createHandle } from '@dojo/core/lang';
+import { Handle } from '@dojo/interfaces/core';
 import { VNode } from '@dojo/interfaces/vdom';
 import { includes } from '@dojo/shim/array';
+import Map from '@dojo/shim/Map';
 import { Constructor, DNode, HNode, VirtualDomProperties, WidgetBaseInterface, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
 import { decorate, isHNode, isWNode, v, w } from '@dojo/widget-core/d';
 import WidgetBase, { afterRender } from '@dojo/widget-core/WidgetBase';
@@ -13,8 +15,8 @@ import assertRender from './support/assertRender';
 import sendEvent, { SendEventOptions } from './support/sendEvent';
 
 const ROOT_CUSTOM_ELEMENT_NAME = 'test--harness';
-const WIDGET_STUB_CUSTOM_ELEMENT = 'test--widget-stub';
-const WIDGET_STUB_NAME_PROPERTY = 'data--widget-name';
+export const WIDGET_STUB_CUSTOM_ELEMENT = 'test--widget-stub';
+export const WIDGET_STUB_NAME_PROPERTY = 'data--widget-name';
 
 let harnessId = 0;
 
@@ -49,12 +51,12 @@ const EVENT_HANDLERS = [
  * Decorate a `DNode` where any `WNode`s are replaced with stubbed widgets
  * @param target The `DNode` to decorate with stubbed widgets
  */
-function stubRender(target: DNode): DNode {
+function stubRender(target: DNode, stubMap: Map<StubWidgetMapKey, StubWidgetMapValue>): DNode {
 	decorate(
 		target,
 		(dNode: WNode) => {
 			const { widgetConstructor, properties } = dNode;
-			dNode.widgetConstructor = StubWidget;
+			dNode.widgetConstructor = stubMap.has(dNode.widgetConstructor) ? stubMap.get(dNode.widgetConstructor)! : StubWidget;
 			(<StubWidgetProperties> properties)._stubTag = WIDGET_STUB_CUSTOM_ELEMENT;
 			(<StubWidgetProperties> properties)._widgetName = typeof widgetConstructor === 'string'
 				? widgetConstructor
@@ -65,17 +67,24 @@ function stubRender(target: DNode): DNode {
 	return target;
 }
 
-interface StubWidgetProperties extends WidgetProperties {
+export interface StubWidgetProperties extends WidgetProperties {
 	_stubTag: string;
 	_widgetName: string;
 }
 
-class StubWidget extends WidgetBase<StubWidgetProperties> {
+export class StubWidget<P extends StubWidgetProperties> extends WidgetBase<P> {
 	render(): DNode {
 		const { bind, _stubTag: tag, _widgetName: widgetName } = this.properties;
 		return v(tag, { bind, [WIDGET_STUB_NAME_PROPERTY]: widgetName }, this.children);
 	}
 }
+
+/**
+ * A map of widget constructors and the subtitute stubs
+ */
+export type StubWidgetMap = Iterable<[StubWidgetMapKey, StubWidgetMapValue]> | ArrayLike<[StubWidgetMapKey, StubWidgetMapValue]>;
+export type StubWidgetMapKey = string | Constructor<WidgetBaseInterface<WidgetProperties>>;
+export type StubWidgetMapValue = Constructor<StubWidget<StubWidgetProperties>>;
 
 interface SpyRenderMixin {
 	spyRender(result: DNode): DNode;
@@ -90,13 +99,13 @@ interface SpyTarget {
  * @param base The base class to add the render spy to
  * @param target An object with a property named `lastRender` which will be set to the result of the `render()` method
  */
-function SpyRenderMixin<T extends Constructor<WidgetBaseInterface<WidgetProperties>>>(base: T, target: SpyTarget): T & Constructor<SpyRenderMixin> {
+function SpyRenderMixin<T extends Constructor<WidgetBaseInterface<WidgetProperties>>>(base: T, target: SpyTarget, stubMap: Map<StubWidgetMapKey, StubWidgetMapValue>): T & Constructor<SpyRenderMixin> {
 
 	class SpyRender extends base {
 		@afterRender()
 		spyRender(result: DNode): DNode {
 			target.actualRender(result);
-			return stubRender(result);
+			return stubRender(result, stubMap);
 		}
 	};
 
@@ -131,10 +140,10 @@ class WidgetHarness<P extends WidgetProperties, W extends Constructor<WidgetBase
 	public lastRender: DNode | undefined;
 	public renderCount = 0;
 
-	constructor(widgetConstructor: W, afterCreate: (element: HTMLElement) => void) {
+	constructor(widgetConstructor: W, afterCreate: (element: HTMLElement) => void, stubMap: Map<StubWidgetMapKey, StubWidgetMapValue>) {
 		super();
 
-		this._widgetConstructor = SpyRenderMixin(widgetConstructor, this);
+		this._widgetConstructor = SpyRenderMixin(widgetConstructor, this, stubMap);
 		this._afterCreate = afterCreate;
 	}
 
@@ -197,6 +206,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 
 	private _children: DNode[] | undefined;
 	private _classes: string[] = [];
+	private _dirty = false;
 	private _projection: Projection | undefined;
 	private _projectionOptions: ProjectionOptions;
 	private _projectionRoot: HTMLElement;
@@ -207,6 +217,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 	}
 
 	private _root: HTMLElement | undefined;
+	private _stubWidgetMap: Map<StubWidgetMapKey, StubWidgetMapValue>;
 	private _widgetHarness: WidgetHarness<P, W>;
 	private _widgetHarnessRender: () => string | VNode | null;
 
@@ -218,19 +229,29 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 	/**
 	 * Harness a widget constructor, providing an API to interact with the widget for testing purposes.
 	 * @param widgetConstructor The constructor function/class that should be harnessed
+	 * @param stubWidgetMap A map of widget constructors and the stub widget classes that should be used when stubbing widget renders.
 	 * @param projectionRoot Where to append the harness.  Defaults to `document.body`
 	 */
-	constructor(widgetConstructor: W, projectionRoot: HTMLElement = document.body) {
+	constructor(
+		widgetConstructor: W,
+		stubWidgetMap?: StubWidgetMap,
+		projectionRoot: HTMLElement = document.body
+	) {
 		super({});
-
-		this._widgetHarness = new WidgetHarness<P, W>(widgetConstructor, this._afterCreate);
-		this._widgetHarnessRender = this._widgetHarness.__render__.bind(this._widgetHarness);
 
 		this._projectionRoot = projectionRoot;
 		this._projectionOptions = {
 			transitions: cssTransitions,
 			eventHandlerInterceptor: this._eventHandlerInterceptor.bind(this._widgetHarness)
 		};
+
+		this._stubWidgetMap = new Map(stubWidgetMap);
+		this.own(createHandle(() => {
+			this._stubWidgetMap.clear();
+		}));
+
+		this._widgetHarness = new WidgetHarness<P, W>(widgetConstructor, this._afterCreate, this._stubWidgetMap);
+		this._widgetHarnessRender = this._widgetHarness.__render__.bind(this._widgetHarness);
 
 		this.own(this._widgetHarness);
 	}
@@ -262,7 +283,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 		else {
 			// remove "on" from event name
 			const eventName = propertyName.substr(2);
-			domNode.addEventListener(eventName, (...args: any[]) => {
+			domNode.addEventListener(eventName, function (this: Node, ...args: any[]) {
 				eventHandler.apply(properties.bind || this, args);
 			});
 		}
@@ -281,6 +302,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 		else {
 			this._widgetHarness.invalidate();
 		}
+		this._dirty = false;
 	}
 
 	/**
@@ -338,13 +360,20 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 	 * Get the root element of the harnessed widget.  This will refresh the render.
 	 */
 	public getDom(): HTMLElement {
-		if (!this._attached) {
+		if (this._dirty || !this._attached) {
 			this._invalidate();
 		}
 		if (!(this._root && this._root.firstChild)) {
 			throw new Error('No root node has been rendered');
 		}
 		return <HTMLElement> this._root.firstChild;
+	}
+
+	public map(widget: StubWidgetMapKey, stub: StubWidgetMapValue): Handle {
+		this._stubWidgetMap.set(widget, stub);
+		return createHandle(() => {
+			this._stubWidgetMap.delete(widget);
+		});
 	}
 
 	/**
@@ -376,6 +405,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 	 * @param children The children to be set on the harnessed widget
 	 */
 	public setChildren(children: DNode[]): this {
+		this._dirty = true;
 		this._children = children;
 		return this;
 	}
@@ -385,6 +415,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 	 * @param properties The properties to set
 	 */
 	public setProperties(properties: P): this {
+		this._dirty = true;
 		this._properties = properties;
 		return this;
 	}
@@ -395,8 +426,8 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
  * @param widgetConstructor The constructor function/class of widget that should be harnessed.
  * @param projectionRoot The root where the harness should append itself to the DOM.  Default to `document.body`
  */
-export default function harness<P extends WidgetProperties, W extends Constructor<WidgetBaseInterface<P>>>(widgetConstructor: W, projectionRoot?: HTMLElement): Harness<P, W> {
-	return new Harness<P, W>(widgetConstructor, projectionRoot);
+export default function harness<P extends WidgetProperties, W extends Constructor<WidgetBaseInterface<P>>>(widgetConstructor: W, stubWidgetMap?: StubWidgetMap, projectionRoot?: HTMLElement): Harness<P, W> {
+	return new Harness<P, W>(widgetConstructor, stubWidgetMap, projectionRoot);
 }
 
 /* Helper functions */
