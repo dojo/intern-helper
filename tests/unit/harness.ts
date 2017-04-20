@@ -173,10 +173,10 @@ registerSuite({
 		'render does not occur'() {
 			class BrokenRender {
 				addDecorator() { }
-				setProperties() { }
+				__setProperties__() { }
 				on() { }
 				own() { }
-				setChildren() { }
+				__setChildren__() { }
 				__render__() { }
 			}
 
@@ -192,12 +192,12 @@ registerSuite({
 		'are additive'() {
 			const widget = harness(MockWidget);
 
-			assert.deepEqual(widget.classes('foo', 'bar'), {
+			assert.deepEqual(widget.classes('foo', 'bar')(), {
 				foo: true,
 				bar: true
 			});
 
-			assert.deepEqual(widget.classes('baz', 'bar'), {
+			assert.deepEqual(widget.classes('baz', 'bar')(), {
 				foo: false,
 				baz: true,
 				bar: true
@@ -209,7 +209,7 @@ registerSuite({
 		'handles null values'() {
 			const widget = harness(MockWidget);
 
-			assert.deepEqual(widget.classes('baz', null, 'bar'), {
+			assert.deepEqual(widget.classes('baz', null, 'bar')(), {
 				baz: true,
 				bar: true
 			});
@@ -221,14 +221,14 @@ registerSuite({
 	'.resetClasses()'() {
 		const widget = harness(MockWidget);
 
-		assert.deepEqual(widget.classes('foo', 'bar'), {
+		assert.deepEqual(widget.classes('foo', 'bar')(), {
 			foo: true,
 			bar: true
 		});
 
 		widget.resetClasses();
 
-		assert.deepEqual(widget.classes('baz', 'bar'), {
+		assert.deepEqual(widget.classes('baz', 'bar')(), {
 			baz: true,
 			bar: true
 		});
