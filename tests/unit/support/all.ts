@@ -3,3 +3,4 @@ import './AssertionError';
 import './assertRender';
 import './loadJsdom';
 import './sendEvent';
+import './virtualDom';

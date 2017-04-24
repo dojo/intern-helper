@@ -1,10 +1,11 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as main from '../../src/main';
-import harness, { assignChildProperties, assignProperties, replaceChild, replaceChildProperties, replaceProperties } from '../../src/harness';
+import harness from '../../src/harness';
 import assertRender from '../../src/support/assertRender';
 import sendEvent from '../../src/support/sendEvent';
 import ClientErrorCollector from '../../src/intern/ClientErrorCollector';
+import { assignChildProperties, assignProperties, replaceChild, replaceChildProperties, replaceProperties } from '../../src/support/virtualDom';
 
 registerSuite({
 	name: 'main',
