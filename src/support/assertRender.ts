@@ -10,12 +10,12 @@ export interface AssertRenderOptions extends DiffOptions {
 	/**
 	 * A replacement type guard for `isHNode`
 	 */
-	isHNode?(node: any): node is HNode;
+	isHNode?(child: DNode): child is HNode;
 
 	/**
 	 * A replacement type guard for `isWNode`
 	 */
-	isWNode?(node: any): node is WNode;
+	isWNode?(child: DNode): child is WNode;
 }
 
 /**
@@ -58,7 +58,7 @@ const defaultDiffOptions: DiffOptions = {
  */
 export default function assertRender(actual: DNode, expected: DNode, message?: string): void;
 export default function assertRender(actual: DNode, expected: DNode, options: AssertRenderOptions, message?: string): void;
-export default function assertRender(actual: DNode, expected: DNode, options: any, message?: string): void {
+export default function assertRender(actual: DNode, expected: DNode, options?: AssertRenderOptions | string, message?: string): void {
 	if (typeof options === 'string') {
 		message = options;
 		options = undefined;
