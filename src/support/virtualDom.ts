@@ -30,16 +30,13 @@ export function assignProperties(target: WNode | HNode, properties: WidgetProper
 export function replaceChild(target: WNode | HNode, index: number | string, replacement: DNode): WNode | HNode {
 	/* TODO: Combine with resolveChild */
 	if (typeof index === 'number') {
-		if (!target.children) {
-			target.children = [];
-		}
 		target.children[index] = replacement;
 	}
 	else {
 		const indexes = index.split(',').map(Number);
 		const lastIndex = indexes.pop()!;
 		const resolvedTarget = indexes.reduce((target, idx) => {
-			if (!(isWNode(target) || isHNode(target)) || !target.children) {
+			if (!(isWNode(target) || isHNode(target))) {
 				throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 			}
 			return target.children[idx];
@@ -47,30 +44,48 @@ export function replaceChild(target: WNode | HNode, index: number | string, repl
 		if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
 			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 		}
-		if (!resolvedTarget.children) {
-			resolvedTarget.children = [];
-		}
 		resolvedTarget.children[lastIndex] = replacement;
 	}
 	return target;
 }
 
+function hasChildren(value: any): value is WNode | HNode {
+	return value && typeof value === 'object' && 'children' in value;
+}
+
+export function findKey(target: WNode | HNode, key: string | object): WNode | HNode | undefined {
+	if (target.properties.key === key) {
+		return target;
+	}
+	let found: WNode | HNode | undefined;
+	target.children
+		.some((child) => {
+			if (hasChildren(child)) {
+				return Boolean(found = findKey(child, key));
+			}
+			return false;
+		});
+	return found;
+}
+
+/**
+ * Return a DNode that is identified by supplied index
+ * @param target The target WNode or HNode to resolve the index for
+ * @param index A number or a string indicating the child index
+ */
 function resolveChild(target: WNode | HNode, index: number | string): DNode {
 	if (typeof index === 'number') {
-		if (!target.children) {
-			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
-		}
 		return target.children[index];
 	}
 	const indexes = index.split(',').map(Number);
 	const lastIndex = indexes.pop()!;
 	const resolvedTarget = indexes.reduce((target, idx) => {
-		if (!(isWNode(target) || isHNode(target)) || !target.children) {
+		if (!(isWNode(target) || isHNode(target))) {
 			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 		}
 		return target.children[idx];
 	}, <DNode> target);
-	if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget)) || !resolvedTarget.children) {
+	if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
 		throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 	}
 	return resolvedTarget.children[lastIndex];

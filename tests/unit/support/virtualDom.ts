@@ -3,6 +3,7 @@ import * as registerSuite from 'intern!object';
 import {
 	assignChildProperties,
 	assignProperties,
+	findKey,
 	replaceChild,
 	replaceChildProperties,
 	replaceProperties
@@ -14,7 +15,7 @@ import assertRender from '../../../src/support/assertRender';
 registerSuite({
 	name: 'support/virtualDom',
 
-		'assignChildProperties()': {
+	'assignChildProperties()': {
 		'by index'() {
 			const actual = v('div', {}, [ null, v('a', { href: '#link' }) ]);
 
@@ -145,6 +146,29 @@ registerSuite({
 			replaceProperties(actual, { classes: { 'foo': true } });
 
 			assertRender(actual, v('div', { classes: { 'foo': true } }, [ null, v('a', { href: '#link' }) ]));
+		}
+	},
+
+	'findKey()': {
+		'key not found'() {
+			assert.isUndefined(findKey(v('div'), 'foo'), 'should not find a key');
+		},
+
+		'key not found with children'() {
+			assert.isUndefined(findKey(v('div', [ v('span', { key: 'bar' }), 'foo', null ]), 'foo'), 'should not find key');
+		},
+
+		'key is in root node'() {
+			assertRender(findKey(v('div', { key: 'foo' }), 'foo')!, v('div', { key: 'foo' }), 'should find root node');
+		},
+
+		'key is in child'() {
+			assertRender(findKey(v('div', { key: 'bar' }, [ v('span', { key: 'foo' }), 'foo', null ]), 'foo')!, v('span', { key: 'foo' }), 'should find child node');
+		},
+
+		'key is object'() {
+			const obj = {};
+			assertRender(findKey(v('div', { key: 'bar' }, [ v('span', { key: obj }), 'foo', null ]), obj)!, v('span', { key: obj }), 'should find child node');
 		}
 	},
 
