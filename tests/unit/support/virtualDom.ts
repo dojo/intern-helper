@@ -169,6 +169,15 @@ registerSuite({
 		'key is object'() {
 			const obj = {};
 			assertRender(findKey(v('div', { key: 'bar' }, [ v('span', { key: obj }), 'foo', null ]), obj)!, v('span', { key: obj }), 'should find child node');
+		},
+
+		'value is WNode'() {
+			const vnode = v('div', { key: 'bar' }, [
+					w('widget', { key: 'baz' }),
+					w('widget', { key: 'foo' }, [ 'foo' ])
+				]);
+
+			assertRender(findKey(vnode, 'foo')!, w('widget', { key: 'foo' }, [ 'foo' ]), 'should find widget');
 		}
 	},
 
