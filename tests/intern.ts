@@ -19,9 +19,12 @@ export const capabilities = {
 // OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
 // capabilities options specified for an environment will be copied as-is
 export const environments = [
-	{ browserName: 'internet explorer', version: '11', platform: 'WINDOWS' },
+	{ browserName: 'internet explorer', version: '11' },
+	{ browserName: 'edge' },
 	{ browserName: 'firefox', platform: 'WINDOWS' },
-	{ browserName: 'chrome', platform: 'WINDOWS' }
+	{ browserName: 'chrome', platform: 'WINDOWS' },
+	{ browserName: 'safari', platform: 'MAC' },
+	{ browserName: 'iPhone' }
 ];
 
 // Maximum number of simultaneous integration tests that should be executed on the remote WebDriver service
