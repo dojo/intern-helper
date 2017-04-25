@@ -5,7 +5,7 @@ import harness from '../../src/harness';
 import assertRender from '../../src/support/assertRender';
 import sendEvent from '../../src/support/sendEvent';
 import ClientErrorCollector from '../../src/intern/ClientErrorCollector';
-import { assignChildProperties, assignProperties, replaceChild, replaceChildProperties, replaceProperties } from '../../src/support/virtualDom';
+import { assignChildProperties, assignProperties, findIndex, findKey, replaceChild, replaceChildProperties, replaceProperties } from '../../src/support/virtualDom';
 
 registerSuite({
 	name: 'main',
@@ -24,6 +24,12 @@ registerSuite({
 
 		assert.isFunction(main.ClientErrorCollector);
 		assert.strictEqual(main.ClientErrorCollector, ClientErrorCollector);
+
+		assert.isFunction(main.findIndex);
+		assert.strictEqual(main.findIndex, findIndex);
+
+		assert.isFunction(main.findKey);
+		assert.strictEqual(main.findKey, findKey);
 
 		assert.isFunction(main.harness);
 		assert.strictEqual(main.harness, harness);

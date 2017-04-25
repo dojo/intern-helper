@@ -3,6 +3,7 @@ import * as registerSuite from 'intern!object';
 import {
 	assignChildProperties,
 	assignProperties,
+	findIndex,
 	findKey,
 	replaceChild,
 	replaceChildProperties,
@@ -181,61 +182,35 @@ registerSuite({
 		}
 	},
 
-	'non-exported resolveChild()': {
+	'findIndex()': {
 		'by string index'() {
 			const actual = v('div', {}, [ null, v('a', { href: '#link' }) ]);
-
-			assertRender(actual, v('div', {}, [ null, v('a', { href: '#link' }) ]));
-
-			assignChildProperties(actual, '1', { target: '_blank' });
-
-			assertRender(actual, v('div', {}, [ null, v('a', { href: '#link', target: '_blank' }) ]));
+			assertRender(findIndex(actual, '1')!, v('a', { href: '#link' }));
 		},
 
-		'no children throws'() {
+		'no children returns undefined'() {
 			const actual = w('widget', {});
-
-			assertRender(actual, w('widget', {}));
-
-			assert.throws(() => {
-				assignChildProperties(actual, 0, { foo: 'bar' });
-			}, TypeError, 'Index of "0" is not resolving to a valid target');
+			assert.isUndefined(findIndex(actual, 0));
 		},
 
 		'by string deep index'() {
 			const actual = v('div', {}, [ v('span', {}, [ v('a', { href: '#link' }) ]) ]);
-
-			assertRender(actual, v('div', {}, [ v('span', {}, [ v('a', { href: '#link' }) ]) ]));
-
-			assignChildProperties(actual, '0,0', { target: '_blank' });
-
-			assertRender(actual, v('div', {}, [ v('span', {}, [ v('a', { href: '#link', target: '_blank' }) ]) ]));
+			assertRender(findIndex(actual, '0,0')!, v('a', { href: '#link' }));
 		},
 
-		'final item missing children throws'() {
+		'final item missing children returns undefined'() {
 			const actual = v('div', [ v('span', [ w('widget', { }) ]) ]);
-
-			assertRender(actual, v('div', [ v('span', [ w('widget', { }) ]) ]));
-
-			assert.throws(() => {
-				assignChildProperties(actual, '0,0,0', { foo: 'bar' });
-			}, TypeError, 'Index of "0,0,0" is not resolving to a valid target');
+			assert.isUndefined(findIndex(actual, '0,0,0'));
 		},
 
-		'string index resolving to a non child node throws'() {
+		'string index resolving to a non child returns undefined'() {
 			const actual = v('div', {}, [ v('span', {}, [ 'foobar' ]), v('a', { href: '#link' }) ]);
-
-			assert.throws(() => {
-				assignChildProperties(actual, '0,0,0', { foo: 'bar' });
-			}, TypeError, 'Index of "0,0,0" is not resolving to a valid target');
+			assert.isUndefined(findIndex(actual, '0,0,0'));
 		},
 
-		'string index resolve to an earlier non child node throws'() {
+		'string index resolve to an earlier non child node returns undefined'() {
 			const actual = v('div', {}, [ v('span', {}, [ 'foobar' ]), v('a', { href: '#link' }) ]);
-
-			assert.throws(() => {
-				assignChildProperties(actual, '3,0,0', { foo: 'bar' });
-			}, TypeError, 'Index of "3,0,0" is not resolving to a valid target');
+			assert.isUndefined(findIndex(actual, '3,0,0'));
 		}
 	}
 });

@@ -3,8 +3,8 @@ import { DNode, HNode, VirtualDomProperties, WidgetProperties, WNode } from '@do
 import { isHNode, isWNode } from '@dojo/widget-core/d';
 
 export function assignChildProperties(target: WNode | HNode, index: number | string, properties: WidgetProperties | VirtualDomProperties): WNode | HNode {
-	const node = resolveChild(target, index);
-	if (!(isWNode(node) || isHNode(node))) {
+	const node = findIndex(target, index);
+	if (!node || !(isWNode(node) || isHNode(node))) {
 		throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 	}
 	assignProperties(node, properties);
@@ -28,7 +28,7 @@ export function assignProperties(target: WNode | HNode, properties: WidgetProper
  * @param replacement The DNode to be replaced
  */
 export function replaceChild(target: WNode | HNode, index: number | string, replacement: DNode): WNode | HNode {
-	/* TODO: Combine with resolveChild */
+	/* TODO: Combine with findIndex */
 	if (typeof index === 'number') {
 		target.children[index] = replacement;
 	}
@@ -73,27 +73,27 @@ export function findKey(target: WNode | HNode, key: string | object): WNode | HN
  * @param target The target WNode or HNode to resolve the index for
  * @param index A number or a string indicating the child index
  */
-function resolveChild(target: WNode | HNode, index: number | string): DNode {
+export function findIndex(target: WNode | HNode, index: number | string): DNode | undefined {
 	if (typeof index === 'number') {
 		return target.children[index];
 	}
 	const indexes = index.split(',').map(Number);
 	const lastIndex = indexes.pop()!;
-	const resolvedTarget = indexes.reduce((target, idx) => {
+	const resolvedTarget = indexes.reduce((target: any, idx) => {
 		if (!(isWNode(target) || isHNode(target))) {
-			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
+			return target;
 		}
 		return target.children[idx];
-	}, <DNode> target);
+	}, target);
 	if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
-		throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
+		return;
 	}
 	return resolvedTarget.children[lastIndex];
 }
 
 export function replaceChildProperties(target: WNode | HNode, index: number | string, properties: WidgetProperties | VirtualDomProperties): WNode | HNode {
-	const node = resolveChild(target, index);
-	if (!(isWNode(node) || isHNode(node))) {
+	const node = findIndex(target, index);
+	if (!node || !(isWNode(node) || isHNode(node))) {
 		throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 	}
 	replaceProperties(node, properties);

@@ -445,6 +445,27 @@ assignProperties(expected, {
 });
 ```
 
+### findIndex()
+
+Returns a node identified by the supplied `index`.  The first argument is the _root_ virtual DOM node (`WNode` or `HNode`) and the
+second argument is the `index` being searched for.  Indexes can be either numbers, or a string of comma deliminated numbers which
+specify the deeper index.  For example a string of `0,1,2` would get the third child of the second child of the first child of the
+_root_.  If resolved, the function will return the `DNode`, otherwise it returns `undefined`.
+
+An example:
+
+```typescript
+const vdom = const expected = v('div', [
+    v('ol', { type: 'I' }, [
+        v('li', { value: 3 }, [ 'foo' ]),
+        v('li', { }, [ 'bar' ]),
+        v('li', { }, [ 'baz' ])
+    ])
+]);
+
+findIndex(vdom, '0,0,0'); // returns 'foo'
+```
+
 ### findKey()
 
 Returns a node identified by the supplied `key`.  The first argument is the _root_ virutal DOM node (`WNode` or `HNode`) and the
@@ -462,7 +483,7 @@ const vdom = const expected = v('div', [
     ])
 ]);
 
-findKey(vdom, 'foo'); // returns `v('li', { key: 'foo' }, [ 'foo' ])
+findKey(vdom, 'foo'); // returns `v('li', { key: 'foo' }, [ 'foo' ])`
 ```
 
 #### replaceChild()
