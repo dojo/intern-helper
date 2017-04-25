@@ -3,6 +3,7 @@ import * as assert from 'intern/chai!assert';
 import * as main from '../../src/main';
 import harness from '../../src/harness';
 import assertRender from '../../src/support/assertRender';
+import callListener from '../../src/support/callListener';
 import sendEvent from '../../src/support/sendEvent';
 import ClientErrorCollector from '../../src/intern/ClientErrorCollector';
 import { assignChildProperties, assignProperties, findIndex, findKey, replaceChild, replaceChildProperties, replaceProperties } from '../../src/support/virtualDom';
@@ -21,6 +22,9 @@ registerSuite({
 
 		assert.isFunction(main.assignProperties);
 		assert.strictEqual(main.assignProperties, assignProperties);
+
+		assert.isFunction(main.callListener);
+		assert.strictEqual(main.callListener, callListener);
 
 		assert.isFunction(main.ClientErrorCollector);
 		assert.strictEqual(main.ClientErrorCollector, ClientErrorCollector);
@@ -45,5 +49,7 @@ registerSuite({
 
 		assert.isFunction(main.sendEvent);
 		assert.strictEqual(main.sendEvent, sendEvent);
+
+		assert.strictEqual(Object.keys(main).length, 12, 'should have 12 exports');
 	}
 });

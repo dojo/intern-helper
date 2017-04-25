@@ -346,6 +346,42 @@ additional virtual DOM to be rendered (e.g. a `w()`/`WNode` which has a widget c
 the will not be compared.  If those comparisons are important, then walking the `DNode` structure and comparing the results
 using `assertRender()` would need to be done.
 
+### support/callListener
+
+When working with virtual DOM, it is a common pattern to mix in protected or private listeners to properties of the virtual DOM,
+either to supply event listeners to DOM events or deal with higher order widget _events_.  `callListener` is a module which exports
+a single default function to make calling these when testing easier.
+
+The function takes up to three arguments.  The first is the `target` that you want to call the listener on, the second is a string
+value of the `method` that is expected to be in the properties.  The third is an optional argument of `options`.
+
+_Note:_ Unlike when sending events, there is no _magical_ prepending of `'on'` to finding the listener property to call.  Therefore if
+the `method` in the properties is `'onClick'` the argument passed as `method` should be `'onClick'`.
+
+The options are all optional and are:
+
+|Option|Default|Description|
+|------|-------|-----------|
+|`args`|`undefined`|An array of arguments to pass the listener when called.|
+|`index`|`undefined`|Instead of calling the listener on the `node` argument, resolve the listener by index.  This can be either a number or a string of numbers deliminated by a comma (e.g. `"0,1,2"` which would target the 3rd child of the 2nd child of the 1st child of `node`).
+|`key`|`undefined`|Locate that target based on the `key` property of the nodes.  This is useful when wanting to target a _named_ sub-widget of a rendered widget.|
+|`target`|`undefined`|Instead of using `node`, use `target` instead.  This is designed for supporting integration into other APIs and is not useful by itself.|
+|`thisArg`|`properties.bind` or `undefined`|By default, the resolved listener will be called with a `this` of `undefined` or the resolved node's `properties.bind` if specified.  Alternatively you can supply a `thisArg` to provide a different `this` when calling.|
+
+An example:
+
+```typescript
+const node = v('div', { key: 'root' }, [
+    w('sub-widget', { key: 'left', onClick: listener }, [ 'content' ]),
+    w('sub-widget', { key: 'right', onClick: listener }, [ 'content' ])
+]);
+
+callListener(node, 'onClick', {
+    args: [ event ],
+    key: 'left'
+});
+```
+
 ### support/loadJsdom
 
 `loadJsdom` is a module which will attempt to load `jsdom` in environments where there appears to be no global `document` object
