@@ -78,6 +78,42 @@ Since it would require widget's to break their encapsulation to expose their lis
 render to have a reference to the actual listener.  It only compares if the property exists and that both the actual and expected
 values are of `typeof === 'function'`.
 
+#### .callListener()
+
+When working with virtual DOM, it is a common pattern to mix in protected or private listeners to properties of the virtual DOM,
+either to supply event listeners to DOM events or deal with higher order widget _events_.  `.callListener()` is designed to make it
+easier to be able to invoke these listeners for testing.
+
+_Note:_ This should not be used as a substitute for `.sendEvent()` where DOM events are dispatched to the DOM and follow the
+bubbling and canceling supported by the DOM.  You can easily get false positives in your units if you are not using `.sendEvent()`
+when dealing with DOM events.  This is mainly designed for calling listeners on sub-widgets of which the harness widget is setting
+the listener in the properties of the sub-widget.
+
+The function takes up to two arguments.  The first is a string value of the `method` that is expected to be in the properties.
+The second is an optional argument of `options`.
+
+_Note:_ Unlike when sending events, there is no _magical_ prepending of `'on'` to finding the listener property to call.  Therefore if
+the `method` in the properties is `'onClick'` the argument passed as `method` should be `'onClick'`.
+
+The options are all optional and are:
+
+|Option|Default|Description|
+|------|-------|-----------|
+|`args`|`undefined`|An array of arguments to pass the listener when called.|
+|`index`|`undefined`|Instead of calling the listener on the `node` argument, resolve the listener by index.  This can be either a number or a string of numbers deliminated by a comma (e.g. `"0,1,2"` which would target the 3rd child of the 2nd child of the 1st child of `node`).
+|`key`|`undefined`|Locate that target based on the `key` property of the nodes.  This is useful when wanting to target a _named_ sub-widget of a rendered widget.|
+|`target`|`undefined`|Instead of using `node`, use `target` instead.  This can be used if you have a complex render and you want to supply the target directly.|
+|`thisArg`|determined by `widget-core`|Normally, the rendering of the virtual DOM by `widget-core` will automatically resolving binding and passing of `thisArg` will have no effect on the `this` of the listener.  It is preserved here for compatability with `support/callListener` where sometimes this needs to be supplied.|
+
+An example:
+
+```typescript
+widget.callListener('onClick', {
+    args: [ event ],
+    key: 'left'
+});
+```
+
 #### .classes()
 
 Returns a value to be passed as a classes property of a `v()` or `w()` call that adds classes in the same way they would be added

@@ -126,7 +126,7 @@ registerSuite({
 
 		'bad render throws'() {
 			class NullWidget extends WidgetBase<WidgetProperties> {
-				render () {
+				render() {
 					return null;
 				}
 			}
@@ -239,7 +239,7 @@ registerSuite({
 	'.setChildren()': {
 		'set children are in render'() {
 			class ParentWidget extends WidgetBase<WidgetProperties> {
-				render () {
+				render() {
 					return v('div', {}, this.children);
 				}
 			}
@@ -358,6 +358,139 @@ registerSuite({
 			assert.strictEqual(clickCount, 1);
 
 			widget.destroy();
+		}
+	},
+
+	'.callListener()': {
+		'defaults'() {
+			let rootClick = 0;
+			let firstClick = 0;
+			let secondClick = 0;
+			class ComplexSubWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', {
+						onclick() {
+							rootClick++;
+						}
+					}, [
+						w(MockWidget, { bind: this, onClick() { firstClick++; }, key: 'first' }),
+						w('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
+					]);
+				}
+			}
+
+			const widget = harness(ComplexSubWidget);
+			widget.callListener('onclick');
+			assert.strictEqual(rootClick, 1);
+			assert.strictEqual(firstClick, 0);
+			assert.strictEqual(secondClick, 0);
+		},
+
+		'by key'() {
+			let rootClick = 0;
+			let firstClick = 0;
+			let secondClick = 0;
+			class ComplexSubWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', {
+						onclick() {
+							rootClick++;
+						}
+					}, [
+						w(MockWidget, { bind: this, onClick() { firstClick++; }, key: 'first' }),
+						w('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
+					]);
+				}
+			}
+
+			const widget = harness(ComplexSubWidget);
+			widget.callListener('onClick', { key: 'first' });
+			assert.strictEqual(rootClick, 0);
+			assert.strictEqual(firstClick, 1);
+			assert.strictEqual(secondClick, 0);
+		},
+
+		'by index'() {
+			let rootClick = 0;
+			let firstClick = 0;
+			let secondClick = 0;
+			class ComplexSubWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', {
+						onclick() {
+							rootClick++;
+						}
+					}, [
+						w(MockWidget, { bind: this, onClick() { firstClick++; }, key: 'first' }),
+						w('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
+					]);
+				}
+			}
+
+			const widget = harness(ComplexSubWidget);
+			widget.callListener('onClick', { index: 1 });
+			assert.strictEqual(rootClick, 0);
+			assert.strictEqual(firstClick, 0);
+			assert.strictEqual(secondClick, 1);
+		},
+
+		'properties.bind'() {
+			class ComplexSubWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', { }, [
+						w(MockWidget, { bind: this, onClick(this: any) {
+							assert.instanceOf(this, ComplexSubWidget, 'should call with bound scope');
+						}, key: 'first' })
+					]);
+				}
+			}
+
+			const widget = harness(ComplexSubWidget);
+			widget.callListener('onClick', { key: 'first' });
+		},
+
+		'with args'() {
+			const event = {};
+			class BasicWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', {
+						onclick(e) {
+							assert.strictEqual(e, event);
+						}
+					});
+				}
+			}
+
+			const widget = harness(BasicWidget);
+			widget.callListener('onclick', {
+				args: [ event ]
+			});
+		},
+
+		'widget renders string'() {
+			class StringWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return 'foo';
+				}
+			}
+
+			const widget = harness(StringWidget);
+			assert.throws(() => {
+				widget.callListener('onclick');
+			}, TypeError, 'Widget is not rendering an HNode or WNode');
+		},
+
+		'widget renders null'() {
+			class NullWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return null;
+				}
+			}
+
+			const widget = harness(NullWidget);
+			assert.throws(() => {
+				widget.callListener('onclick');
+			}, TypeError, 'Widget is not rendering an HNode or WNode');
 		}
 	},
 

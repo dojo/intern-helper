@@ -10,6 +10,7 @@ import WidgetBase, { afterRender } from '@dojo/widget-core/WidgetBase';
 import cssTransitions from '@dojo/widget-core/animations/cssTransitions';
 import { dom, Projection, ProjectionOptions, VNodeProperties } from 'maquette';
 import assertRender from './support/assertRender';
+import callListener, { CallListenerOptions } from './support/callListener';
 import sendEvent, { SendEventOptions } from './support/sendEvent';
 
 const ROOT_CUSTOM_ELEMENT_NAME = 'test--harness';
@@ -281,6 +282,19 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 		else {
 			this._widgetHarness.invalidate();
 		}
+	}
+
+	/**
+	 * Call a listener on a target node of the virtual DOM.
+	 * @param method The method to call on the target node
+	 * @param options A map of options that effect the behaviour of `callListener`
+	 */
+	public callListener(method: string, options?: CallListenerOptions): void {
+		const render = this.getRender();
+		if (typeof render !== 'object' || render === null) {
+			throw new TypeError('Widget is not rendering an HNode or WNode');
+		}
+		callListener(render, method, options);
 	}
 
 	/**
