@@ -22,13 +22,13 @@ export function assignProperties(target: WNode | HNode, properties: WidgetProper
 /**
  * Replace a child of DNode.
  *
- * *NOTE:* The replacement modify the passed `target` and does not return a new instance of the `DNode`.
+ * *NOTE:* The replacement modifies the passed `target` and does not return a new instance of the `DNode`.
  * @param target The DNode to replace a child element on
  * @param index A number of the index of a child, or a string with comma seperated indexes that would nagivate
  * @param replacement The DNode to be replaced
  */
 export function replaceChild(target: WNode | HNode, index: number | string, replacement: DNode): WNode | HNode {
-	/* TODO: Combine with findIndex */
+	/* TODO: [Combine with findIndex](https://github.com/dojo/test-extras/issues/28) */
 	if (typeof index === 'number') {
 		target.children[index] = replacement;
 	}
@@ -69,8 +69,8 @@ export function findKey(target: WNode | HNode, key: string | object): WNode | HN
 }
 
 /**
- * Return a DNode that is identified by supplied index
- * @param target The target WNode or HNode to resolve the index for
+ * Return a `DNode` that is identified by supplied index
+ * @param target The target `WNode` or `HNode` to resolve the index for
  * @param index A number or a string indicating the child index
  */
 export function findIndex(target: WNode | HNode, index: number | string): DNode | undefined {

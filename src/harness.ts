@@ -287,7 +287,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 	/**
 	 * Call a listener on a target node of the virtual DOM.
 	 * @param method The method to call on the target node
-	 * @param options A map of options that effect the behaviour of `callListener`
+	 * @param options A map of options that effect the behavior of `callListener`
 	 */
 	public callListener(method: string, options?: CallListenerOptions): void {
 		const render = this.getRender();
@@ -371,7 +371,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 
 	/**
 	 * Dispatch an event to the root DOM element of the rendered harnessed widget.  You can use the options to change the
-	 * event class, provide additional event properties, or select a different target.
+	 * event class, provide additional event properties, or select a different `target`.
 	 *
 	 * By default, the event class is `CustomEvent` and `bubbles` and `cancelable` are both `true` on events dispatched by
 	 * the harness.

@@ -22,7 +22,7 @@ export interface CallListenerOptions {
 	key?: string | object;
 
 	/**
-	 * Supply your own target
+	 * Supply your own `target`
 	 */
 	target?: HNode | WNode;
 
