@@ -24,22 +24,26 @@ if (!('document' in global)) {
 	const jsdom = require('jsdom'); /* Only attempt to load JSDOM to avoid using a loader plugin */
 
 	/* create a virtual console and direct it to the global `console` */
-	virtualConsole = jsdom.createVirtualConsole() as VirtualConsole;
+	virtualConsole = new jsdom.VirtualConsole() as VirtualConsole;
 	virtualConsole.sendTo(console);
 
-	/* Create a new document and assign it to the global namespace */
-	doc = global.document = jsdom.jsdom(`
+	/* Create a new jsdom instance */
+	const dom = new jsdom.JSDOM(`
 		<!DOCTYPE html>
 		<html>
 		<head></head>
 		<body></body>
 		<html>
 	`, {
-		virtualConsole
+		virtualConsole,
+		runScripts: 'dangerously'
 	});
 
 	/* Assign a global window */
-	global.window = global.document.defaultView;
+	global.window = dom.window;
+
+	/* Assign a global document */
+	doc = global.document = global.window.document;
 
 	/* Assign a global DocParser */
 	global.DOMParser = global.window.DOMParser;
