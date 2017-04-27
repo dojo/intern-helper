@@ -67,6 +67,7 @@ if (!('document' in global)) {
 }
 else {
 	doc = document;
+	/* istanbul ignore else */
 	if (!exists('jsdom')) {
 		hasAdd('jsdom', false);
 	}
