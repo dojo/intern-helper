@@ -1,5 +1,5 @@
 import { HNode, WNode } from '@dojo/widget-core/interfaces';
-import { findIndex, findKey } from './virtualDom';
+import { findIndex, findKey } from './d';
 
 /**
  * Options that can be passed to `callListener`

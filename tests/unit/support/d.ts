@@ -8,7 +8,7 @@ import {
 	replaceChild,
 	replaceChildProperties,
 	replaceProperties
-} from '../../../src/support/virtualDom';
+} from '../../../src/support/d';
 
 import { v, w } from '@dojo/widget-core/d';
 import assertRender from '../../../src/support/assertRender';

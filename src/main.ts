@@ -3,7 +3,7 @@ import ClientErrorCollector from './intern/ClientErrorCollector';
 import assertRender from './support/assertRender';
 import callListener from './support/callListener';
 import sendEvent from './support/sendEvent';
-import { assignChildProperties, assignProperties, findIndex, findKey, replaceChild, replaceChildProperties, replaceProperties } from './support/virtualDom';
+import { assignChildProperties, assignProperties, findIndex, findKey, replaceChild, replaceChildProperties, replaceProperties } from './support/d';
 
 export {
 	assertRender,

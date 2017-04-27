@@ -6,7 +6,7 @@ import assertRender from '../../src/support/assertRender';
 import callListener from '../../src/support/callListener';
 import sendEvent from '../../src/support/sendEvent';
 import ClientErrorCollector from '../../src/intern/ClientErrorCollector';
-import { assignChildProperties, assignProperties, findIndex, findKey, replaceChild, replaceChildProperties, replaceProperties } from '../../src/support/virtualDom';
+import { assignChildProperties, assignProperties, findIndex, findKey, replaceChild, replaceChildProperties, replaceProperties } from '../../src/support/d';
 
 registerSuite({
 	name: 'main',
