@@ -229,6 +229,35 @@ function createValuePropertyDescriptor(value: any, writable: boolean = true, enu
 }
 
 /**
+ * A function that returns a constructor record or `undefined` when diffing a value
+ */
+export type CustomDiffFunction<T> = (value: T, nameOrIndex: string | number, parent: object) => UnamedConstructRecord | void;
+
+/**
+ * A class which is used when making a custom comparison of a non-plain object or array
+ */
+export class CustomDiff<T> {
+	private _differ: CustomDiffFunction<T>;
+
+	constructor(diff: CustomDiffFunction<T>) {
+		this._differ = diff;
+	}
+
+	/**
+	 * Get the difference of the `value`
+	 * @param value The value to diff
+	 * @param nameOrIndex A `string` if comparing a property or a `number` if comparing an array element
+	 * @param parent The outer parent that this value is part of
+	 */
+	diff(value: T, nameOrIndex: string | number, parent: object): ConstructRecord | void {
+		const record = this._differ(value, nameOrIndex, parent);
+		if (record && typeof nameOrIndex === 'string') {
+			return assign(record, { name: nameOrIndex });
+		}
+	}
+}
+
+/**
  * Internal function that detects the differences between an array and another value and returns a set of splice records that
  * describe the differences
  *
@@ -379,13 +408,13 @@ function diffPlainObject(a: any, b: any, options: DiffOptions): (ConstructRecord
 					patchRecords.push(createPatchRecord(type, name, createValuePropertyDescriptor(value), diff(valueA, value, options)));
 				}
 			}
-			else if (isObjectDiff(valueA) && !isObjectDiff(valueB)) { /* complex diff left hand */
+			else if (isCustomDiff(valueA) && !isCustomDiff(valueB)) { /* complex diff left hand */
 				const result = valueA.diff(valueB, name, b);
 				if (result) {
 					patchRecords.push(result);
 				}
 			}
-			else if (isObjectDiff(valueB)) { /* complex diff right hand */
+			else if (isCustomDiff(valueB)) { /* complex diff right hand */
 				const result = valueB.diff(valueA, name, a);
 				if (result) {
 					patchRecords.push(result);
@@ -469,11 +498,11 @@ function isPrimitive(value: any): value is (string | number | boolean | undefine
 }
 
 /**
- * A guard that determines if the value is a `ObjectDiff`
+ * A guard that determines if the value is a `CustomDiff`
  * @param value The value to check
  */
-function isObjectDiff<T>(value: any): value is ObjectDiff<T> {
-	return typeof value === 'object' && value instanceof ObjectDiff;
+function isCustomDiff<T>(value: any): value is CustomDiff<T> {
+	return typeof value === 'object' && value instanceof CustomDiff;
 }
 
 /**
@@ -557,23 +586,6 @@ function resolveTargetValue(patchValue: any, targetValue: any): any {
 			patchValue
 		) :
 		patchValue;
-}
-
-export type ObjectDiffFunction<T> = (value: T, nameOrIndex: string | number, parent: object) => UnamedConstructRecord | void;
-
-export class ObjectDiff<T extends object> {
-	private _differ: ObjectDiffFunction<T>;
-
-	constructor(diff: ObjectDiffFunction<T>) {
-		this._differ = diff;
-	}
-
-	diff(value: T, nameOrIndex: string | number, parent: object): ConstructRecord | void {
-		const record = this._differ(value, nameOrIndex, parent);
-		if (record && typeof nameOrIndex === 'string') {
-			return assign(record, { name: nameOrIndex });
-		}
-	}
 }
 
 /**

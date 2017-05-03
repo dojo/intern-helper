@@ -29,7 +29,7 @@ special virtual DOM nodes before being sent to the virtual DOM engine for render
 like `<test--widget-stub data--widget-name="<<widget class name>>"></test--widget-stub>`, where `data--widget-name` will be set
 to either the widget class tag or the name of the class (*note* IE11 does not support function names, therefore it will have
 `<Anonymous>` as the value of the attribute instead.  The substituion occurs *after* the virtual DOM is compared on an
-`.expectedRender()` assertion, so expected virtual DOM passed to that function should be as the widget will be expected to
+`.expectRender()` assertion, so expected virtual DOM passed to that function should be as the widget will be expected to
 return from its `.render()` implimentation.
 
 Basic usage of `harness()` would look like this:
@@ -187,7 +187,7 @@ widget.expectRender(expected);
 Cleans up the `harness` instance and removes the harness and other rendered DOM from the DOM.  You should *always* call `.destroy()`
 otherwise you will leave quite a lot of grabage DOM in the document which may have impacts on other tests you will run.
 
-#### .expectedRender()
+#### .expectRender()
 
 Provide an expected of virtual DOM which will be compared with the actual rendered virtual DOM from the widget class.  It *spies*
 the result from the harnessed widget's `.render()` return and compares that with the provided expected virtual DOM.  If the `actual`

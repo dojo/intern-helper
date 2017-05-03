@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { createConstructRecord, diff, patch, ObjectDiff } from '../../../src/support/compare';
+import { createConstructRecord, diff, patch, CustomDiff } from '../../../src/support/compare';
 
 registerSuite({
 	name: 'compare',
@@ -297,13 +297,13 @@ registerSuite({
 					const a = {
 						foo: /foo/
 					};
-					const objectDiff = new ObjectDiff((value: RegExp, name, parent) => {
+					const customDiff = new CustomDiff((value: RegExp, name, parent) => {
 						called = true;
 						assert.instanceOf(value, RegExp, 'value should be a regualar expression');
 						assert.strictEqual(name, 'foo', 'name should equal "foo"');
 						assert.strictEqual(parent, a, 'correct parent should be passed');
 					});
-					const patchRecords = diff(a, { foo: objectDiff });
+					const patchRecords = diff(a, { foo: customDiff });
 					assert.isTrue(called, 'object differ should have been called');
 					assert.deepEqual(patchRecords, [], 'should have found no differences');
 				},
@@ -311,14 +311,14 @@ registerSuite({
 				'a object differ is called'() {
 					let called = false;
 					const b = { foo: /foo/ };
-					const objectDiff = new ObjectDiff((value: RegExp, name, parent) => {
+					const customDiff = new CustomDiff((value: RegExp, name, parent) => {
 						called = true;
 						assert.instanceOf(value, RegExp, 'value should be a regualar expression');
 						assert.strictEqual(name, 'foo', 'name should equal "foo"');
 						assert.strictEqual(parent, b, 'correct parent should be passed');
 					});
 					const a = {
-						foo: objectDiff
+						foo: customDiff
 					};
 					const patchRecords = diff(a, b);
 					assert.isTrue(called, 'object differ should have been called');
@@ -329,10 +329,10 @@ registerSuite({
 					const a = {
 						foo: /foo/
 					};
-					const objectDiff = new ObjectDiff(() => {
+					const customDiff = new CustomDiff(() => {
 						return createConstructRecord(RegExp);
 					});
-					const patchRecords = diff(a, { foo: objectDiff });
+					const patchRecords = diff(a, { foo: customDiff });
 					assert.deepEqual(patchRecords, [
 						{ Ctor: RegExp, name: 'foo' }
 					], 'should have expected patch records');
@@ -342,10 +342,10 @@ registerSuite({
 					const a = {
 						foo: /foo/
 					};
-					const objectDiff = new ObjectDiff(() => {
+					const customDiff = new CustomDiff(() => {
 						return createConstructRecord(RegExp, [ '/bar/' ]);
 					});
-					const patchRecords = diff(a, { foo: objectDiff });
+					const patchRecords = diff(a, { foo: customDiff });
 					assert.deepEqual(patchRecords, [
 						{ args: [ '/bar/' ], Ctor: RegExp, name: 'foo' }
 					], 'should have expected patch records');
@@ -355,30 +355,30 @@ registerSuite({
 					const a = {
 						foo: /foo/
 					};
-					const objectDiff = new ObjectDiff(() => {
+					const customDiff = new CustomDiff(() => {
 						return createConstructRecord(RegExp, undefined, { writable: true });
 					});
-					const patchRecords = diff(a, { foo: objectDiff });
+					const patchRecords = diff(a, { foo: customDiff });
 					assert.deepEqual(patchRecords, [
 						{ Ctor: RegExp, descriptor: { writable: true },  name: 'foo' }
 					], 'should have expected patch records');
 				},
 
 				'deleted property'() {
-					const objectDiff = new ObjectDiff(() => {
+					const customDiff = new CustomDiff(() => {
 						return createConstructRecord(RegExp);
 					});
-					const patchRecords = diff({ }, { foo: objectDiff });
+					const patchRecords = diff({ }, { foo: customDiff });
 					assert.deepEqual(patchRecords, [
 						{ name: 'foo', type: 'delete' }
 					], 'should have expected patch records');
 				},
 
 				'added property'() {
-					const objectDiff = new ObjectDiff(() => {
+					const customDiff = new CustomDiff(() => {
 						return createConstructRecord(RegExp);
 					});
-					const patchRecords = diff({ foo: objectDiff }, { });
+					const patchRecords = diff({ foo: customDiff }, { });
 					assert.deepEqual(patchRecords, [
 						{ Ctor: RegExp, name: 'foo' }
 					], 'should have expected patch records');
