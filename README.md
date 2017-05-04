@@ -456,6 +456,34 @@ assignProperties(expected, {
 });
 ```
 
+### compareProperty()
+
+Returns an object which is used in render assertion comparisons like `harness.expectRender()` or `assertRender()`.  This is designed
+to allow validation of propery values that are difficult to know or obtain references to until the widget has rendered (e.g. registries or dynamically generated IDs).
+
+The function takes a single argument of `callback` which is a function that will be called when the property value needs to be validated.
+This `callback` can take up to three arguments.  The first is the `value` of the property to check, the second is the `name` of the
+property, and `parent` is either the actual `WidgetProperties` or `VirtualDomProperties` that this value is from.  If the value is _valid_
+then the function should return `true`, if the value is _not valid_ returning `false` will cause an `AssertionError` to be thrown, naming
+the property which has an unexpected value.
+
+*Note:* the type of the return value can often not be valid for the property value that you are passing it for.  You may need to cast
+it as `any` in order to allow TypeScript type checking to succeed.
+
+An example of usage would be:
+
+```ts
+import { compareProperty } from '@dojo/test-extras/support/d';
+
+const compareRegistryProperty = compareProperty((value) => {
+    return value instanceof Registry;
+});
+
+widget.expectRender(v('div', {}, [
+    w('child', { registry: compareRegistryProperty })
+]));
+```
+
 ### findIndex()
 
 Returns a node identified by the supplied `index`.  The first argument is the _root_ virtual DOM node (`WNode` or `HNode`) and the
