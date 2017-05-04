@@ -29,7 +29,7 @@ special virtual DOM nodes before being sent to the virtual DOM engine for render
 like `<test--widget-stub data--widget-name="<<widget class name>>"></test--widget-stub>`, where `data--widget-name` will be set
 to either the widget class tag or the name of the class (*note* IE11 does not support function names, therefore it will have
 `<Anonymous>` as the value of the attribute instead.  The substituion occurs *after* the virtual DOM is compared on an
-`.expectedRender()` assertion, so expected virtual DOM passed to that function should be as the widget will be expected to
+`.expectRender()` assertion, so expected virtual DOM passed to that function should be as the widget will be expected to
 return from its `.render()` implimentation.
 
 Basic usage of `harness()` would look like this:
@@ -187,7 +187,7 @@ widget.expectRender(expected);
 Cleans up the `harness` instance and removes the harness and other rendered DOM from the DOM.  You should *always* call `.destroy()`
 otherwise you will leave quite a lot of grabage DOM in the document which may have impacts on other tests you will run.
 
-#### .expectedRender()
+#### .expectRender()
 
 Provide an expected of virtual DOM which will be compared with the actual rendered virtual DOM from the widget class.  It *spies*
 the result from the harnessed widget's `.render()` return and compares that with the provided expected virtual DOM.  If the `actual`
@@ -241,10 +241,11 @@ of the widget's rendered DOM.  The second is an optional object literal of addit
 
 |Option|Description|
 |------|-----------|
-|eventClass|A string that matches the class of event to use (e.g. `MouseEvent`).  By default, `CustomEvent` is used.|
-|eventInit|Any properties that should be part of initialising the event.  Note that `bubbles` and `cancelable` are `true` by default, which is different then if you were creating events directly.|
-|selector|A string selector to be applied to the root DOM element of the rendered widget.  This is intended to make it easy to sub-select a part of the widget's rendered DOM for targetting the event.|
-|target|By default, the widget's render root element is used.  This property subtitutes a specific target to dispatch the event to.|
+|`eventClass`|A string that matches the class of event to use (e.g. `MouseEvent`).  By default, `CustomEvent` is used.|
+|`eventInit`|Any properties that should be part of initialising the event.  Note that `bubbles` and `cancelable` are `true` by default, which is different then if you were creating events directly.|
+|`key`|A virtual DOM `key` that identifies the DOM node to dispatch an event to.  This is intended to make it easy to select a part of the widget's rendered DOM for targetting the event.|
+|`selector`|A string selector to be applied to the root DOM element of the rendered widget.  This is intended to make it easy to sub-select a part of the widget's rendered DOM for targetting the event.|
+|`target`|By default, the widget's render root element is used.  This property subtitutes a specific target to dispatch the event to.|
 
 Using event classes other than `CustomEvent` can sometimes be challenging, as cross browser support is sometimes difficult to acheive.
 In most use cases, assuming the widget is not expecting an event of a particular class, custom events should be fine.
@@ -454,6 +455,34 @@ const expected = v('div', {
 assignProperties(expected, {
     classes: widget.classes(css.root, css.open)
 });
+```
+
+### compareProperty()
+
+Returns an object which is used in render assertion comparisons like `harness.expectRender()` or `assertRender()`.  This is designed
+to allow validation of propery values that are difficult to know or obtain references to until the widget has rendered (e.g. registries or dynamically generated IDs).
+
+The function takes a single argument of `callback` which is a function that will be called when the property value needs to be validated.
+This `callback` can take up to three arguments.  The first is the `value` of the property to check, the second is the `name` of the
+property, and `parent` is either the actual `WidgetProperties` or `VirtualDomProperties` that this value is from.  If the value is _valid_
+then the function should return `true`, if the value is _not valid_ returning `false` will cause an `AssertionError` to be thrown, naming
+the property which has an unexpected value.
+
+*Note:* the type of the return value can often not be valid for the property value that you are passing it for.  You may need to cast
+it as `any` in order to allow TypeScript type checking to succeed.
+
+An example of usage would be:
+
+```ts
+import { compareProperty } from '@dojo/test-extras/support/d';
+
+const compareRegistryProperty = compareProperty((value) => {
+    return value instanceof Registry;
+});
+
+widget.expectRender(v('div', {}, [
+    w('child', { registry: compareRegistryProperty })
+]));
 ```
 
 ### findIndex()
