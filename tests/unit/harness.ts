@@ -512,11 +512,17 @@ registerSuite({
 			class DuplicateKeyWidget extends WidgetBase<WidgetProperties> {
 				render() {
 					return v('div', { key: 'foo' }, [
+						'foo',
 						v('span', { key: 'parent1' }, [
-							v('i', { key: 'icon', id: 'i1' })
+							v('i', { key: 'icon', id: 'i1' }, [ 'bar' ]),
+							'bar'
 						]),
 						v('span', { key: 'parent2' }, [
-							v('i', { key: 'icon', id: 'i2' })
+							v('i', { key: 'super-icon', id: 'i1' }, [ 'bar' ]),
+							'bar'
+						]),
+						v('span', { key: 'parent3' }, [
+							v('i', { key: 'icon', id: 'i2' }, [ 'bar' ])
 						])
 					]);
 				}

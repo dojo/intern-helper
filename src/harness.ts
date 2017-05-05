@@ -59,15 +59,13 @@ function findVNodebyKey(target: VNode, key: string | object): VNode | undefined 
 	if (typeof target === 'object' && target.children) {
 		target.children
 			.forEach((child) => {
-				if (typeof child === 'object') {
-					if (found) {
-						if (findVNodebyKey(child, key)) {
-							console.warn(`Duplicate key of "${key}" found.`);
-						}
+				if (found) {
+					if (findVNodebyKey(child, key)) {
+						console.warn(`Duplicate key of "${key}" found.`);
 					}
-					else {
-						found = findVNodebyKey(child, key);
-					}
+				}
+				else {
+					found = findVNodebyKey(child, key);
 				}
 			});
 	}
