@@ -58,11 +58,17 @@ function findVNodebyKey(target: VNode, key: string | object): VNode | undefined 
 	let found: VNode | undefined;
 	if (typeof target === 'object' && target.children) {
 		target.children
-			.some((child) => {
-				if (typeof child === 'object' && child.children) {
-					return Boolean(found = findVNodebyKey(child, key));
+			.forEach((child) => {
+				if (typeof child === 'object') {
+					if (found) {
+						if (findVNodebyKey(child, key)) {
+							console.warn(`Duplicate key of "${key}" found.`);
+						}
+					}
+					else {
+						found = findVNodebyKey(child, key);
+					}
 				}
-				return false;
 			});
 	}
 	return found;

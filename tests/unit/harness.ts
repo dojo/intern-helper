@@ -6,6 +6,7 @@ import { compareProperty } from '../../src/support/d';
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
+import { stub } from 'sinon';
 import AssertionError from '../../src/support/AssertionError';
 import assertRender from '../../src/support/assertRender';
 
@@ -505,6 +506,32 @@ registerSuite({
 			}, Error, 'Could not find key of "foo" to sendEvent');
 
 			widget.destroy();
+		},
+
+		'with duplicate key'() {
+			class DuplicateKeyWidget extends WidgetBase<WidgetProperties> {
+				render() {
+					return v('div', { key: 'foo' }, [
+						v('span', { key: 'parent1' }, [
+							v('i', { key: 'icon', id: 'i1' })
+						]),
+						v('span', { key: 'parent2' }, [
+							v('i', { key: 'icon', id: 'i2' })
+						])
+					]);
+				}
+			}
+
+			const warnStub = stub(console, 'warn');
+
+			const widget = harness(DuplicateKeyWidget);
+			widget.sendEvent('click', {
+				key: 'icon'
+			});
+			assert.strictEqual(warnStub.callCount, 1, 'should have been called once');
+			assert.strictEqual(warnStub.lastCall.args[0], 'Duplicate key of "icon" found.', 'should have logged duplicate key');
+
+			warnStub.restore();
 		},
 
 		'text only widget'() {
