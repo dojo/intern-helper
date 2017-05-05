@@ -42,9 +42,26 @@ export interface Constructor {
 	prototype: object;
 }
 
+/**
+ * A partial property descriptor that provides the property descriptor flags supported by the
+ * complex property construction of `patch()`
+ *
+ * All properties are value properties, with the value being supplied by the `ConstructRecord`
+ */
 export interface ConstructDescriptor {
+	/**
+	 * Is the property configurable?
+	 */
 	configurable?: boolean;
+
+	/**
+	 * Is the property enumerable?
+	 */
 	enumerable?: boolean;
+
+	/**
+	 * Is the property configurable?
+	 */
 	writable?: boolean;
 }
 
@@ -52,7 +69,7 @@ export interface ConstructDescriptor {
  * A record that describes a constructor function and arguments necessary to create an instance of
  * an object
  */
-export interface UnamedConstructRecord {
+export interface AnonymousConstructRecord {
 	/**
 	 * Any arguments to pass to the constructor function
 	 */
@@ -74,7 +91,7 @@ export interface UnamedConstructRecord {
 	propertyRecords?: (ConstructRecord | PatchRecord)[];
 }
 
-export interface ConstructRecord extends UnamedConstructRecord {
+export interface ConstructRecord extends AnonymousConstructRecord {
 	/**
 	 * The name of the property on the Object
 	 */
@@ -153,8 +170,8 @@ export interface SpliceRecord {
  * @param args Any arguments to be passed to the constructor function
  */
 /* tslint:disable:variable-name */
-export function createConstructRecord(Ctor: Constructor, args?: any[], descriptor?: ConstructDescriptor): UnamedConstructRecord {
-	const record: UnamedConstructRecord = assign(objectCreate(null), { Ctor });
+export function createConstructRecord(Ctor: Constructor, args?: any[], descriptor?: ConstructDescriptor): AnonymousConstructRecord {
+	const record: AnonymousConstructRecord = assign(objectCreate(null), { Ctor });
 	if (args) {
 		record.args = args;
 	}
@@ -231,7 +248,7 @@ function createValuePropertyDescriptor(value: any, writable: boolean = true, enu
 /**
  * A function that returns a constructor record or `undefined` when diffing a value
  */
-export type CustomDiffFunction<T> = (value: T, nameOrIndex: string | number, parent: object) => UnamedConstructRecord | void;
+export type CustomDiffFunction<T> = (value: T, nameOrIndex: string | number, parent: object) => AnonymousConstructRecord | void;
 
 /**
  * A class which is used when making a custom comparison of a non-plain object or array
