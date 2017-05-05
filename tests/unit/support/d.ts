@@ -214,14 +214,14 @@ registerSuite({
 		},
 
 		'value is WNode'() {
-			const vnode = w('widget', {
+			const vnode = w<any>('widget', {
 					onClick() { }
 				}, [
-					w('sub-widget', { key: 'foo', onClick() { } }),
-					w('sub-widget', { key: 'bar', onClick() { } })
+					w<any>('sub-widget', { key: 'foo', onClick() { } }),
+					w<any>('sub-widget', { key: 'bar', onClick() { } })
 				]);
 
-			assertRender(findKey(vnode, 'foo')!, w('sub-widget', { key: 'foo', onClick() { } }), 'should find widget');
+			assertRender(findKey(vnode, 'foo')!, w<any>('sub-widget', { key: 'foo', onClick() { } }), 'should find widget');
 		},
 
 		'duplicate keys warn'() {
