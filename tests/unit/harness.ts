@@ -16,9 +16,10 @@ interface MockWidgetProperties extends WidgetProperties {
 	foo?: string;
 	bar?: number;
 	baz?: (e: Event) => void;
+	onClick?: () => void;
 }
 
-class MockWidget<P extends MockWidgetProperties> extends WidgetBase<P> {
+class MockWidget extends WidgetBase<MockWidgetProperties> {
 	render() {
 		return v('div.foo');
 	}
@@ -374,7 +375,7 @@ registerSuite({
 						}
 					}, [
 						w(MockWidget, { bind: this, onClick() { firstClick++; }, key: 'first' }),
-						w('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
+						w<MockWidget>('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
 					]);
 				}
 			}
@@ -398,7 +399,7 @@ registerSuite({
 						}
 					}, [
 						w(MockWidget, { bind: this, onClick() { firstClick++; }, key: 'first' }),
-						w('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
+						w<MockWidget>('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
 					]);
 				}
 			}
@@ -422,7 +423,7 @@ registerSuite({
 						}
 					}, [
 						w(MockWidget, { bind: this, onClick() { firstClick++; }, key: 'first' }),
-						w('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
+						w<MockWidget>('widget', { bind: this, onClick() { secondClick++; }, key: 'second' })
 					]);
 				}
 			}

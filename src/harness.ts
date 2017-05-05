@@ -4,7 +4,7 @@ import Evented from '@dojo/core/Evented';
 import { createHandle } from '@dojo/core/lang';
 import { VNode } from '@dojo/interfaces/vdom';
 import { includes } from '@dojo/shim/array';
-import { ClassesFunction, Constructor, DNode, VirtualDomProperties, WidgetBaseInterface, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
+import { ClassesFunction, Constructor, DNode, WidgetBaseInterface, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
 import { decorate, isWNode, v, w } from '@dojo/widget-core/d';
 import WidgetBase, { afterRender } from '@dojo/widget-core/WidgetBase';
 import cssTransitions from '@dojo/widget-core/animations/cssTransitions';
@@ -45,10 +45,6 @@ const EVENT_HANDLERS = [
 	'onscroll',
 	'onsubmit'
 ];
-
-export function isVirtualDomPropertiesWithClasses(value: any): value is VirtualDomProperties {
-	return Boolean(value && value.classes);
-}
 
 /**
  * Decorate a `DNode` where any `WNode`s are replaced with stubbed widgets
