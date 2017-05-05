@@ -54,7 +54,7 @@ export interface ConstructDescriptor {
  */
 export interface UnamedConstructRecord {
 	/**
-	 * Any arguments to pass the constructor function
+	 * Any arguments to pass to the constructor function
 	 */
 	args?: any[];
 
@@ -150,7 +150,7 @@ export interface SpliceRecord {
 /**
  * A record that describes how to instantiate a new object via a constructor function
  * @param Ctor The constructor function
- * @param args Any arguments to be passed the constructor function
+ * @param args Any arguments to be passed to the constructor function
  */
 /* tslint:disable:variable-name */
 export function createConstructRecord(Ctor: Constructor, args?: any[], descriptor?: ConstructDescriptor): UnamedConstructRecord {

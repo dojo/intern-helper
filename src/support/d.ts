@@ -22,8 +22,8 @@ export function assignProperties(target: WNode | HNode, properties: WidgetProper
 }
 
 /**
- * Creates a function which when placed in an expected render will call the `callback`.  If the `callback` returns `true`, the value
- * of the property is considered equal, otherwise it is considerd not equal and expected render will fail.
+ * Creates a function which, when placed in an expected render, will call the `callback`.  If the `callback` returns `true`, the value
+ * of the property is considered equal, otherwise it is considerd not equal and the expected render will fail.
  * @param callback A function that is invoked when comparing the property value
  */
 export function compareProperty<T>(callback: (value: T, name: string, parent: WidgetProperties | VirtualDomProperties) => boolean): CustomDiff<T> {
