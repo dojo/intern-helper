@@ -74,7 +74,7 @@ export interface UnamedConstructRecord {
 	propertyRecords?: (ConstructRecord | PatchRecord)[];
 }
 
-interface ConstructRecord extends UnamedConstructRecord {
+export interface ConstructRecord extends UnamedConstructRecord {
 	/**
 	 * The name of the property on the Object
 	 */
