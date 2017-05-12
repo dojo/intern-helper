@@ -305,7 +305,7 @@ registerSuite({
 			}, AssertionError, 'Render unexpected');
 		},
 
-		'bind poperty ignored'() {
+		'bind property ignored'() {
 			const bind = new MockWidget();
 			assertRender(
 				w(MockWidget, { bind }),
