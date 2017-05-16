@@ -316,10 +316,7 @@ export class Harness<P extends WidgetProperties, W extends Constructor<WidgetBas
 		}
 		else {
 			this._widgetHarness.invalidate();
-			this._widgetHarness.emit({
-				type: 'invalidated',
-				target: this
-			});
+			this._render();
 		}
 	}
 
