@@ -66,7 +66,7 @@ which is an `HTMLElement` to append the root of the harness to.  By default, it 
 
 #### .listener
 
-A reference to a simple stub function to use on an expected render as a place holder for listener functions in a render.  For
+A reference to a simple stub function to use on an expected render as a placeholder for listener functions in a render.  For
 example:
 
 ```typescript
@@ -76,7 +76,7 @@ widget.expectRender(v('div', {
 ```
 
 Since it would require widgets to break their encapsulation to expose their listeners, the harness does not require the expected
-render to have a reference to the actual listener.  It only checks if the property exists and that both the actual and expected
+render to have a reference to the actual listener.  The harness only checks if the property exists and that both the actual and expected
 values are of `typeof === 'function'`.
 
 #### .callListener()
