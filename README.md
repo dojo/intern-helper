@@ -156,7 +156,7 @@ widget.expectRender(expected);
 ```
 
 In order to avoid this, you should always generate your expected new classes, or use some of the helper functions that are part of the
-`harness` module to update the classes.  For example:
+`harness` module to update the classes. Also _note_ that the order of the assign operations must be from children up to the parent. For example:
 
 ```typescript
 const expected = v('div', {
@@ -173,11 +173,11 @@ widget.setProperties({
     foo: 'bar'
 });
 
-assignProperties(expected, {
-    classes: widget.classes(css.root)
-});
 assignChildProperties(expected, '0', {
     classes: widget.classes(css.child)
+});
+assignProperties(expected, {
+    classes: widget.classes(css.root)
 });
 
 widget.expectRender(expected);
