@@ -346,6 +346,80 @@ registerSuite({
 });
 ```
 
+### loader/loadModule()
+
+The default export of this module is an async function which resolves with the contents of an AMD module.  It essentially wraps the
+`@dojo/loader` with a `Promise`.  It is intended to be used when needing to dynamically load modules while testing, for example if you need
+to provide some mock modules before the module is loaded.
+
+When using with Intern under TypeScript, typical usage would look something like this:
+
+```ts
+import registerSuite from 'intern!object';
+import assert from 'intern/chai!assert';
+import loadModule from '@dojo/test-extras/loader/loadModule';
+import * as UnitUnderTest from '../../src/some/example';
+
+registerSuite({
+    name: 'some/example',
+
+    async 'some test'() {
+        const example: typeof UnitUnderTest = await loadModule('../../src/some/example', require);
+        assert(example);
+    }
+});
+```
+
+Under TypeScript, importing at at the top level in this fashion will only import the type structure of the module, to make it easier to
+work with the module while testing it.  TypeScript will detect that you are only using the module for its type structure and elide it in
+the emit, leaving the module to be loaded only in the test method.
+
+The function takes three arguments.  The first argument is the module ID, relative or absolute.  The second is an optional argument of
+a localised `require` which will be used when resolving relative modules.  If omitted, the modules will be relative to `loadModule` which
+is likely not desired.  The third arugment, also optional, is `noUndef` which defaults to `false`.  If `true` the module being loaded will
+be undefined prior to being loaded again, protecting you from potentially having the module in the loader's cache.  Note though that if
+other dependencies of the module are already loaded, they will not be undefined prior to loading the requested module.
+
+### loader/mock
+
+This provides an easy way to provide mock or stub modules when using the `@dojo/loader`.  Stubbed modules are injected into the loader's
+cache and offered up when required.  This can be used in conjunction with `loadModule` to allow mocking and stubbing of dependencies.
+
+When using with Intern under TypeScript, typical usage would look something like this:
+
+```ts
+import registerSuite from 'intern!object';
+import assert from 'intern/chai!assert';
+import loadModule from '@dojo/test-extras/loader/loadModule';
+import { enable, register } from '@dojo/test-extras/loader/mock';
+import * as UnitUnderTest from '../../src/some/example';
+
+registerSuite({
+    name: 'some/example',
+
+    async 'some test'() {
+        register('foo/bar/baz', {
+            default() {
+                return 'baz'
+            }
+        });
+        const handle = enable();
+        const example: typeof UnitUnderTest = await loadModule('../../src/some/example', require);
+        assert(example);
+        handle.destroy();
+    }
+});
+```
+
+There are two exported functions. `register()` allows registration of a module, either using an absolute module ID or a relative one.
+The function takes three arguments and returns a destruction handle which will remove the registration.  The first arugment is the
+module ID.  The second arugment is the module contents.  The third argument is an optional arugment which is a localised `require` used
+for resolving relative module IDs.  If not supplied, relative module IDs will be resolved relative to the `mock` module.  Generally it
+is recommended to use absolute module IDs when registering to avoid any confusion.
+
+The second exported function is `enable()` which will inject the registered modules into the loader and return a handle which will
+remove the inject modules from the loader cache and clear out any registered modules.
+
 ### support/assertRender()
 
 `assertRender()` is an assertion function that throws when there is a discrepancy between an actual Dojo virtual DOM (`DNode`)
