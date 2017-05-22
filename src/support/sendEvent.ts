@@ -133,6 +133,14 @@ export default function sendEvent<I extends EventInit>(target: Element, type: st
 		(event as CustomEvent).initCustomEvent(type, bubbles!, cancelable!, {});
 	}
 	try {
+		if ('target' in initProps) {
+			Object.defineProperty(event, 'target', {
+				value: (<any> initProps).target,
+				writable: false,
+				enumerable: true,
+				configurable: false
+			});
+		}
 		deepAssign(event, initProps);
 	}
 	catch (e) { /* swallowing assignment errors when trying to overwrite native event properties */ }

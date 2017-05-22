@@ -57,6 +57,30 @@ registerSuite({
 		});
 	},
 
+	'mock target'() {
+		const target = document.createElement('div');
+		document.body.appendChild(target);
+
+		const mockTarget = {} as HTMLDivElement;
+		let called = false;
+
+		function listener(evt: CustomEvent) {
+			assert.strictEqual(evt.target, mockTarget, 'Target of event should be mock target');
+			called = true;
+		}
+
+		target.addEventListener('click', listener);
+
+		sendEvent(target, 'click', {
+			eventInit: {
+				target: mockTarget
+			}
+		});
+		assert.isTrue(called, 'listener should have been called');
+
+		document.body.removeChild(target);
+	},
+
 	'MouseEvents'() {
 		const target = document.createElement('button');
 		document.body.appendChild(target);
