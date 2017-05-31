@@ -543,7 +543,7 @@ registerSuite({
 					} });
 
 					assert.deepEqual(patchRecords, [], 'should be no differences');
-					assert.deepEqual(propertyStack, [ 'foo', 'bar', 'baz', 'foo', 'bar', 'baz' ]);
+					assert.deepEqual(propertyStack, [ 'foo', 'bar', 'baz' ]);
 				},
 
 				'function and ignored'() {

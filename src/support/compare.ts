@@ -449,7 +449,8 @@ function diffPlainObject(a: any, b: any, options: DiffOptions): (ConstructRecord
 
 export function getComparableObjects(a: any, b: any, options: DiffOptions) {
 	const { ignoreProperties = [], ignorePropertyValues = [] } = options;
-	const ignored = new Set<string>();
+	const ignore = new Set<string>();
+	const keep = new Set<string>();
 
 	function isIgnoredProperty(name: string) {
 		return Array.isArray(ignoreProperties) ? ignoreProperties.some((value) => {
@@ -460,16 +461,17 @@ export function getComparableObjects(a: any, b: any, options: DiffOptions) {
 	const comparableA = keys(a).reduce((obj, name) => {
 		if (isIgnoredProperty(name) ||
 			hasOwnProperty.call(b, name) && isIgnoredPropertyValue(name, a, b, ignorePropertyValues)) {
-				ignored.add(name);
+				ignore.add(name);
 				return obj;
 		}
 
+		keep.add(name);
 		obj[name] = a[name];
 		return obj;
 	}, {} as any);
 
 	const comparableB = keys(b).reduce((obj, name) => {
-		if (ignored.has(name) || isIgnoredProperty(name)) {
+		if (ignore.has(name) || !keep.has(name) && isIgnoredProperty(name)) {
 			return obj;
 		}
 
@@ -477,7 +479,7 @@ export function getComparableObjects(a: any, b: any, options: DiffOptions) {
 		return obj;
 	}, {} as any);
 
-	return { comparableA, comparableB, ignored };
+	return { comparableA, comparableB, ignore };
 }
 
 /**
