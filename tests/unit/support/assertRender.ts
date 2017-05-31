@@ -413,11 +413,12 @@ registerSuite({
 					}
 				});
 			} catch (err) {
-				assert.deepEqual(err, new AssertionError('Render unexpected', {
-					actual: { foo: 'bar' },
-					expected: { foo: 'baz' },
-					showDiff: true
-				}, assertRender), 'Should have excluded ignored properties from error');
+				assert.deepEqual(
+					err.actual, { foo: 'bar' }, 'Should have excluded ignored properties from "actual" value'
+				);
+				assert.deepEqual(
+					err.expected, { foo: 'baz' }, 'Should have excluded ignored properties from "expected" value'
+				);
 			}
 		}
 	}
