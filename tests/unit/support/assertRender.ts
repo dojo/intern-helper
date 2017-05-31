@@ -400,6 +400,25 @@ registerSuite({
 					});
 				}, TypeError, 'Value of property named "bind" from first argument is not a primative, plain Object, or Array.');
 			}
+		},
+
+		'diff should exclude ignored properties and property values'() {
+			try {
+				assertRender(v('div', { foo: 'bar', bar: 2, baz: 2 }), v('div', { foo: 'baz', baz: 3 }), {
+					ignoreProperties(prop): boolean {
+						return prop === 'bar';
+					},
+					ignorePropertyValues(prop): boolean {
+						return prop === 'baz';
+					}
+				});
+			} catch (err) {
+				assert.deepEqual(err, new AssertionError('Render unexpected', {
+					actual: { foo: 'bar' },
+					expected: { foo: 'baz' },
+					showDiff: true
+				}, assertRender), 'Should have excluded ignored properties from error');
+			}
 		}
 	}
 });
