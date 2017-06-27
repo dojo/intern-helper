@@ -447,16 +447,23 @@ function diffPlainObject(a: any, b: any, options: DiffOptions): (ConstructRecord
 	return patchRecords;
 }
 
+/**
+ * Takes two plain objects to be compared, as well as options customizing the behavior of the comparison, and returns
+ * two new objects that contain only those properties that should be compared. If a property is ignored
+ * it will not be included in either returned object. If a property's value should be ignored it will be excluded
+ * if it is present in both objects.
+ * @param a The first object to compare
+ * @param b The second object to compare
+ * @param options An options bag indicating which properties should be ignored or have their values ignored, if any.
+ */
 export function getComparableObjects(a: any, b: any, options: DiffOptions) {
 	const { ignoreProperties = [], ignorePropertyValues = [] } = options;
 	const ignore = new Set<string>();
 	const keep = new Set<string>();
 
-	function isIgnoredProperty(name: string) {
-		return Array.isArray(ignoreProperties) ? ignoreProperties.some((value) => {
-			return typeof value === 'string' ? name === value : value.test(name);
-		}) : ignoreProperties(name, a, b);
-	}
+	const isIgnoredProperty = Array.isArray(ignoreProperties) ? (name: string) => {
+		return ignoreProperties.some((value) => typeof value === 'string' ? name === value : value.test(name));
+	} : (name: string) => ignoreProperties(name, a, b);
 
 	const comparableA = keys(a).reduce((obj, name) => {
 		if (isIgnoredProperty(name) ||
@@ -468,7 +475,7 @@ export function getComparableObjects(a: any, b: any, options: DiffOptions) {
 		keep.add(name);
 		obj[name] = a[name];
 		return obj;
-	}, {} as any);
+	}, {} as { [key: string]: any });
 
 	const comparableB = keys(b).reduce((obj, name) => {
 		if (ignore.has(name) || !keep.has(name) && isIgnoredProperty(name)) {
@@ -477,7 +484,7 @@ export function getComparableObjects(a: any, b: any, options: DiffOptions) {
 
 		obj[name] = b[name];
 		return obj;
-	}, {} as any);
+	}, {} as { [key: string]: any });
 
 	return { comparableA, comparableB, ignore };
 }
