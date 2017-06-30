@@ -127,7 +127,7 @@ registerSuite({
 					v('div', { }, [ 'foo' ]),
 					v('div', { }, [ 'bar' ])
 				);
-			}, 'AssertionError: Render unexpected: Expected foo to equal bar');
+			}, 'AssertionError: Render unexpected: Expected "foo" to equal "bar"');
 		},
 
 		'missing child'() {
