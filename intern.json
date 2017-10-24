@@ -27,13 +27,11 @@
 		}
 	},
 
-	"configs": {
-		"coverage": {
-			"coverage": [
-				"./_build/src/**/*.js"
-			]
-		},
+	"coverage": [
+		"./_build/src/**/*.js"
+	],
 
+	"configs": {
 		"remoteCapabilities": {
 			"capabilities": {
 				"project": "Dojo 2",
@@ -43,7 +41,7 @@
 		},
 
 		"browserstack": {
-			"extends": [ "coverage", "remoteCapabilities" ],
+			"extends": [ "remoteCapabilities" ],
 
 			"tunnel": "browserstack",
 			"capabilities+": {
@@ -63,7 +61,7 @@
 		},
 
 		"local": {
-			"extends": [ "coverage", "remoteCapabilities" ],
+			"extends": [ "remoteCapabilities" ],
 
 			"tunnel": "selenium",
 			"tunnelOptions": {
@@ -77,7 +75,7 @@
 		},
 
 		"saucelabs": {
-			"extends": [ "coverage", "remoteCapabilities" ],
+			"extends": [ "remoteCapabilities" ],
 
 			"tunnel": "saucelabs",
 			"tunnelOptions": {},
