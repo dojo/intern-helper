@@ -211,6 +211,10 @@ class WidgetHarness<W extends WidgetBase<WidgetProperties>> extends WidgetBase<W
 		}
 	}
 
+	/**
+	 * _Mixin_ the methods that are provided as part of the mock.
+	 * @param provider The instance of the meta provider associated with the harnessed widget
+	 */
 	public decorateMeta<T extends WidgetMetaBase>(provider: T): T {
 		const data = this._metaData.get(provider.constructor as WidgetMetaConstructor<T>);
 		return data ? assign(provider, data.mocks) : provider;
@@ -245,8 +249,18 @@ export interface HarnessSendEventOptions<I extends EventInit> extends SendEventO
 	target?: Element;
 }
 
+/**
+ * Provides a run time context for methods of a meta mock.
+ */
 export type MetaMockContext<T extends WidgetMetaBase = WidgetMetaBase> = T & {
+	/**
+	 * Retrieve a reference to a node that is rendered in the DOM based on its key
+	 */
 	getNode(key: string | number): HTMLElement | undefined;
+
+	/**
+	 * Invalidate the widget.
+	 */
 	invalidate(): void;
 };
 
