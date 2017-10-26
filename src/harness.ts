@@ -10,9 +10,9 @@ import {
 	ClassesFunction,
 	Constructor,
 	DNode,
+	HNode,
 	WidgetMetaBase,
 	WidgetMetaConstructor,
-	HNode,
 	WidgetProperties,
 	WNode
 } from '@dojo/widget-core/interfaces';
@@ -276,6 +276,9 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 		this._root = root;
 	}
 
+	/**
+	 * Provides a reference to a function that can be used when creating an expected render value
+	 */
 	public listener = () => true;
 
 	/**
@@ -435,7 +438,7 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 /**
  * Harness a widget class for testing purposes, returning an API to interact with the harness widget class.
  * @param widgetConstructor The constructor function/class of widget that should be harnessed.
- * @param projectionRoot The root where the harness should append itself to the DOM.  Default to `document.body`
+ * @param root The root where the harness should append itself to the DOM.  Defaults to `document.body`
  */
 export default function harness<W extends WidgetBase<WidgetProperties>>(widgetConstructor: Constructor<W>, root?: HTMLElement): Harness<W> {
 	return new Harness(widgetConstructor, root);
