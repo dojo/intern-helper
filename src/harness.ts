@@ -258,7 +258,8 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 			this._children = undefined;
 		}
 		if (!this._projectorHandle) {
-			this._projectorHandle = this._widgetHarness.sandbox();
+			this._widgetHarness.async = false;
+			this._projectorHandle = this._widgetHarness.append();
 		}
 		this._scheduleRender();
 	}
