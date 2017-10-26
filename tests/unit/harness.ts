@@ -852,7 +852,7 @@ registerSuite('harness', {
 		},
 
 		'mocked meta can invalidate widget'() {
-			class IdWidget extends WidgetBase {
+			class IdWidget extends WidgetBase<{ flush: boolean }> {
 				render() {
 					const content = this.meta(NodeId).get('foo');
 					return v('div', {
@@ -875,6 +875,8 @@ registerSuite('harness', {
 					return 'qat';
 				}
 			});
+
+			widget.setProperties({ flush: true });
 
 			widget.expectRender(v('div', {
 				key: 'foo',

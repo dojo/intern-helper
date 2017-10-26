@@ -1,6 +1,7 @@
 import 'pepjs';
 
 import Evented from '@dojo/core/Evented';
+import { createHandle } from '@dojo/core/lang';
 import { Handle } from '@dojo/interfaces/core';
 import { includes } from '@dojo/shim/array';
 import { assign } from '@dojo/shim/object';
@@ -9,11 +10,9 @@ import {
 	ClassesFunction,
 	Constructor,
 	DNode,
-	ProjectionOptions,
 	WidgetMetaBase,
 	WidgetMetaConstructor,
 	HNode,
-	WidgetBaseInterface,
 	WidgetProperties,
 	WNode
 } from '@dojo/widget-core/interfaces';
@@ -134,8 +133,7 @@ interface MetaData {
  * A private class that is used to actually render the widget and keep track of the last render by
  * the harnessed widget.
  */
-class WidgetHarness<P extends WidgetProperties, W extends Constructor<WidgetBaseInterface<P>>> extends WidgetBase<P> {
-	private _widgetConstructor: W;
+class WidgetHarness<W extends WidgetBase> extends WidgetBase {
 	private _id = ROOT_CUSTOM_ELEMENT_NAME + '-' + (++harnessId);
 	private _metaData: WeakMap<Constructor<WidgetMetaBase>, MetaData>;
 	private _widgetConstructor: Constructor<W>;
@@ -159,9 +157,10 @@ class WidgetHarness<P extends WidgetProperties, W extends Constructor<WidgetBase
 	public lastRender: DNode | undefined;
 	public renderCount = 0;
 
-	constructor(widgetConstructor: W) {
+	constructor(widgetConstructor: Constructor<W>, metaData: WeakMap<Constructor<WidgetMetaBase>, MetaData>) {
 		super();
-		this._widgetConstructor = SpyRenderMixin(widgetConstructor, this);
+		this._widgetConstructor = SpyWidgetMixin(widgetConstructor, this);
+		this._metaData = metaData;
 	}
 
 	/**
@@ -233,18 +232,17 @@ export type MetaMockContext<T extends WidgetMetaBase = WidgetMetaBase> = T & {
 	invalidate(): void;
 };
 
+type ProjectorWidgetHarness<W extends WidgetBase<WidgetProperties>> = ProjectorMixin<W['properties']> & WidgetHarness<W>;
+
+const ProjectorWidgetHarness = ProjectorMixin(WidgetHarness);
+
 /**
  * Harness a widget constructor, providing an API to interact with the widget for testing purposes.
  */
 export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
-	private _attached = false;
-type ProjectorWidgetHarness<W extends WidgetBaseInterface<WidgetProperties>> = ProjectorMixin<W['properties']> & WidgetHarness<W['properties'], Constructor<W>>;
-
-const ProjectorWidgetHarness = ProjectorMixin(WidgetHarness);
-
-export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 	private _children: W['children'] | undefined;
 	private _classes: string[] = [];
+	private _metaMap = new WeakMap<Constructor<WidgetMetaBase>, MetaData>();
 	private _projectorHandle: Handle | undefined;
 	private _properties: W['properties'] | undefined;
 	private _scheduleRender: () => void;
@@ -268,7 +266,7 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 	constructor(widgetConstructor: Constructor<W>) {
 		super({});
 
-		const widgetHarness = this._widgetHarness = new ProjectorWidgetHarness(widgetConstructor);
+		const widgetHarness = this._widgetHarness = new ProjectorWidgetHarness(widgetConstructor, this._metaMap);
 		// we want to control when the render gets scheduled, so we will hijack the projects one
 		this._scheduleRender = widgetHarness.scheduleRender.bind(widgetHarness);
 		widgetHarness.scheduleRender = () => {};
@@ -416,7 +414,6 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 	 * Set the children that will be used when rendering the harnessed widget
 	 * @param children The children to be set on the harnessed widget
 	 */
-	public setChildren(children: DNode[]): this {
 	public setChildren(children: W['children']): this {
 		this._children = children;
 		return this;
