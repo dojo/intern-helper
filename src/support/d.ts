@@ -52,6 +52,9 @@ export function compareProperty<T>(callback: (value: T, name: string, parent: Wi
  */
 export function replaceChild(target: WNode | HNode, index: number | string, replacement: DNode): WNode | HNode {
 	/* TODO: [Combine with findIndex](https://github.com/dojo/test-extras/issues/28) */
+	if (!target.children) {
+		throw new TypeError('Target does not have children.');
+	}
 	if (typeof index === 'number') {
 		target.children[index] = replacement;
 	}
@@ -59,12 +62,12 @@ export function replaceChild(target: WNode | HNode, index: number | string, repl
 		const indexes = index.split(',').map(Number);
 		const lastIndex = indexes.pop()!;
 		const resolvedTarget = indexes.reduce((target, idx) => {
-			if (!(isWNode(target) || isHNode(target))) {
+			if (!(isWNode(target) || isHNode(target)) || !target.children) {
 				throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 			}
 			return target.children[idx];
 		}, <DNode> target);
-		if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
+		if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget)) || !resolvedTarget.children) {
 			throw new TypeError(`Index of "${index}" is not resolving to a valid target`);
 		}
 		resolvedTarget.children[lastIndex] = replacement;
@@ -85,6 +88,9 @@ function hasChildren(value: any): value is WNode | HNode {
 export function findKey(target: WNode | HNode, key: string | object): WNode | HNode | undefined {
 	if (target.properties.key === key) {
 		return target;
+	}
+	if (!target.children) {
+		return undefined;
 	}
 	let found: WNode | HNode | undefined;
 	target.children
@@ -110,17 +116,17 @@ export function findKey(target: WNode | HNode, key: string | object): WNode | HN
  */
 export function findIndex(target: WNode | HNode, index: number | string): DNode | undefined {
 	if (typeof index === 'number') {
-		return target.children[index];
+		return target.children ? target.children[index] : undefined;
 	}
 	const indexes = index.split(',').map(Number);
 	const lastIndex = indexes.pop()!;
 	const resolvedTarget = indexes.reduce((target: any, idx) => {
-		if (!(isWNode(target) || isHNode(target))) {
+		if (!(isWNode(target) || isHNode(target)) || !target.children) {
 			return target;
 		}
 		return target.children[idx];
 	}, target);
-	if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget))) {
+	if (!(isWNode(resolvedTarget) || isHNode(resolvedTarget)) || !resolvedTarget.children) {
 		return;
 	}
 	return resolvedTarget.children[lastIndex];

@@ -31,7 +31,7 @@
     "@dojo/has": "~0.1.0",
     "@dojo/i18n": "~0.1.0",
     "@dojo/shim": "~0.1.0",
-    "@dojo/widget-core": "~0.1.0",
+    "@dojo/widget-core": "file:./dojo-widget-core-0.1.2-beta3.1.tgz",
     "intern": "~4.0.2"
   },
   "dependencies": {

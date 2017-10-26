@@ -66,13 +66,20 @@ export default function assertRender(actual: DNode | DNode[], expected: DNode | 
 	const { isHNode: localIsHNode = isHNode, isWNode: localIsWNode = isWNode, ...passedDiffOptions } = (options || {}) as AssertRenderOptions;
 	const diffOptions: DiffOptions = assign({}, defaultDiffOptions, passedDiffOptions);
 
-	function assertChildren(actual: DNode[], expected: DNode[]) {
-		if (actual.length !== expected.length) {
-			throwAssertionError(actual, expected, message);
+	function assertChildren(actual?: DNode[], expected?: DNode[]) {
+		if (actual && expected) {
+			if (actual.length !== expected.length) {
+				throwAssertionError(actual, expected, message);
+			}
+			actual.forEach((actualChild, index) => {
+				assertRender(actualChild, expected[index], message);
+			});
 		}
-		actual.forEach((actualChild, index) => {
-			assertRender(actualChild, expected[index], message);
-		});
+		else {
+			if (actual || expected) {
+				throwAssertionError(actual, expected, message);
+			}
+		}
 	}
 
 	if (Array.isArray(actual) && Array.isArray(expected)) {
