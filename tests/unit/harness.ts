@@ -84,6 +84,17 @@ registerSuite('harness', {
 			widget.destroy();
 		},
 
+		'harness can have a different root'() {
+			const div = document.createElement('div');
+			document.body.appendChild(div);
+
+			const widget = harness(MockWidget, div);
+			const parentElement = widget.getDom().parentElement!;
+			assert.strictEqual(parentElement.parentElement, div, 'the root of the harness should be a child of the div');
+			widget.destroy();
+			document.body.removeChild(div); /* cleanup after test */
+		},
+
 		'WNodes are stubbed'() {
 			const widget = harness(SubWidget);
 			const dom = widget.getDom();

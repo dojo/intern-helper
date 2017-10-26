@@ -245,6 +245,7 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 	private _metaMap = new WeakMap<Constructor<WidgetMetaBase>, MetaData>();
 	private _projectorHandle: Handle | undefined;
 	private _properties: W['properties'] | undefined;
+	private _root: HTMLElement | undefined;
 	private _scheduleRender: () => void;
 	private _widgetHarness: ProjectorWidgetHarness<W>;
 
@@ -259,12 +260,12 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 		}
 		if (!this._projectorHandle) {
 			this._widgetHarness.async = false;
-			this._projectorHandle = this._widgetHarness.append();
+			this._projectorHandle = this._widgetHarness.append(this._root);
 		}
 		this._scheduleRender();
 	}
 
-	constructor(widgetConstructor: Constructor<W>) {
+	constructor(widgetConstructor: Constructor<W>, root?: HTMLElement) {
 		super({});
 
 		const widgetHarness = this._widgetHarness = new ProjectorWidgetHarness(widgetConstructor, this._metaMap);
@@ -272,6 +273,7 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 		this._scheduleRender = widgetHarness.scheduleRender.bind(widgetHarness);
 		widgetHarness.scheduleRender = () => {};
 		this.own(widgetHarness);
+		this._root = root;
 	}
 
 	public listener = () => true;
@@ -435,6 +437,6 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
  * @param widgetConstructor The constructor function/class of widget that should be harnessed.
  * @param projectionRoot The root where the harness should append itself to the DOM.  Default to `document.body`
  */
-export default function harness<W extends WidgetBase<WidgetProperties>>(widgetConstructor: Constructor<W>): Harness<W> {
-	return new Harness(widgetConstructor);
+export default function harness<W extends WidgetBase<WidgetProperties>>(widgetConstructor: Constructor<W>, root?: HTMLElement): Harness<W> {
+	return new Harness(widgetConstructor, root);
 }
