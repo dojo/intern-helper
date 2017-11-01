@@ -3,11 +3,9 @@ import 'pepjs';
 import Evented from '@dojo/core/Evented';
 import { createHandle } from '@dojo/core/lang';
 import { Handle } from '@dojo/interfaces/core';
-import { includes } from '@dojo/shim/array';
 import { assign } from '@dojo/shim/object';
 import WeakMap from '@dojo/shim/WeakMap';
 import {
-	ClassesFunction,
 	Constructor,
 	DNode,
 	HNode,
@@ -241,7 +239,6 @@ const ProjectorWidgetHarness = ProjectorMixin(WidgetHarness);
  */
 export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 	private _children: W['children'] | undefined;
-	private _classes: string[] = [];
 	private _metaMap = new WeakMap<Constructor<WidgetMetaBase>, MetaData>();
 	private _projectorHandle: Handle | undefined;
 	private _properties: W['properties'] | undefined;
@@ -292,34 +289,6 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 			throw new TypeError('Widget is not rendering an HNode or WNode');
 		}
 		callListener(render, method, options);
-	}
-
-	/**
-	 * Provide a set of classes that should be returned as a map.  It is stateful in that previous classes
-	 * will be negated in future calls.  Use `.resetClasses()` to clear the cache of classes.
-	 * @param classes A rest argument of classes to be returned as a map
-	 */
-	public classes(...classes: (string | null)[]): ClassesFunction {
-		return (): { [className: string ]: boolean } => {
-			const result: { [className: string]: boolean } = {};
-
-			this._classes.reduce((result, className) => {
-				result[className] = false;
-				return result;
-			}, result);
-
-			classes.reduce((result, className) => {
-				if (className) {
-					result[className] = true;
-					if (!includes(this._classes, className)) {
-						this._classes.push(className);
-					}
-				}
-				return result;
-			}, result);
-
-			return result;
-		};
 	}
 
 	/**
@@ -381,14 +350,6 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 	public getRender(): DNode {
 		this._invalidate();
 		return this._widgetHarness.lastRender;
-	}
-
-	/**
-	 * Clear any cached classes that have been cached via calls to `.classes()`
-	 */
-	public resetClasses(): this {
-		this._classes = [];
-		return this;
 	}
 
 	/**

@@ -26,14 +26,14 @@ interface MockWidgetProperties extends WidgetProperties {
 
 class MockWidget extends WidgetBase<MockWidgetProperties> {
 	render() {
-		return v('div', { classes: { foo: true } });
+		return v('div', { classes: [ 'foo' ] });
 	}
 }
 
 class MockArrayWidget extends WidgetBase<MockWidgetProperties> {
 	render() {
 		return [
-			v('div', { classes: { foo: true } })
+			v('div', { classes: [ 'foo' ] })
 		];
 	}
 }
@@ -177,13 +177,13 @@ registerSuite('harness', {
 	'.expectRender()': {
 		'HNode render - matches'() {
 			const widget = harness(MockWidget);
-			widget.expectRender(v('div', { classes: { foo: true } }));
+			widget.expectRender(v('div', { classes: [ 'foo' ] }));
 			widget.destroy();
 		},
 
 		'HNode render array - matches'() {
 			const widget = harness(MockArrayWidget);
-			widget.expectRender([ v('div', { classes: { foo: true } }) ]);
+			widget.expectRender([ v('div', { classes: [ 'foo' ] }) ]);
 			widget.destroy();
 		},
 
@@ -212,7 +212,7 @@ registerSuite('harness', {
 		'HNode render - does not match'() {
 			const widget = harness(MockWidget);
 			assert.throws(() => {
-				widget.expectRender(v('div', { classes: { bar: true } }));
+				widget.expectRender(v('div', { classes: [ 'bar' ] }));
 			});
 			widget.destroy();
 		},
@@ -220,7 +220,7 @@ registerSuite('harness', {
 		'HNode render array - does not match'() {
 			const widget = harness(MockWidget);
 			assert.throws(() => {
-				widget.expectRender([ v('div', { classes: { baz: true } }) ]);
+				widget.expectRender([ v('div', { classes: [ 'baz' ] }) ]);
 			});
 			widget.destroy();
 		},
@@ -233,7 +233,7 @@ registerSuite('harness', {
 			}
 			const widget = harness(MockWidget);
 			assert.throws(() => {
-				widget.expectRender([ v('div', { classes: { baz: true } }) ]);
+				widget.expectRender([ v('div', { classes: [ 'baz' ] }) ]);
 			});
 			widget.destroy();
 		},
@@ -246,7 +246,7 @@ registerSuite('harness', {
 			}
 			const widget = harness(MockWidget);
 			assert.throws(() => {
-				widget.expectRender([ v('div', { classes: { baz: true } }) ]);
+				widget.expectRender([ v('div', { classes: [ 'baz' ] }) ]);
 			});
 			widget.destroy();
 		},
@@ -362,54 +362,6 @@ registerSuite('harness', {
 				assert.isTrue(called, 'comparer should have been called');
 			}
 		}
-	},
-
-	'.classes()': {
-		'are additive'() {
-			const widget = harness(MockWidget);
-
-			assert.deepEqual(widget.classes('foo', 'bar')(), {
-				foo: true,
-				bar: true
-			});
-
-			assert.deepEqual(widget.classes('baz', 'bar')(), {
-				foo: false,
-				baz: true,
-				bar: true
-			});
-
-			widget.destroy();
-		},
-
-		'handles null values'() {
-			const widget = harness(MockWidget);
-
-			assert.deepEqual(widget.classes('baz', null, 'bar')(), {
-				baz: true,
-				bar: true
-			});
-
-			widget.destroy();
-		}
-	},
-
-	'.resetClasses()'() {
-		const widget = harness(MockWidget);
-
-		assert.deepEqual(widget.classes('foo', 'bar')(), {
-			foo: true,
-			bar: true
-		});
-
-		widget.resetClasses();
-
-		assert.deepEqual(widget.classes('baz', 'bar')(), {
-			baz: true,
-			bar: true
-		});
-
-		widget.destroy();
 	},
 
 	'.setChildren()': {
@@ -787,7 +739,7 @@ registerSuite('harness', {
 
 	'.getRender()'() {
 		const widget = harness(MockWidget);
-		assertRender(widget.getRender(), v('div', { classes: { foo: true } }));
+		assertRender(widget.getRender(), v('div', { classes: [ 'foo' ] }));
 		widget.destroy();
 	},
 

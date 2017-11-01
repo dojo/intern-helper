@@ -4,10 +4,6 @@ import { isHNode, isWNode } from '@dojo/widget-core/d';
 import AssertionError from './AssertionError';
 import { CustomDiff } from './compare';
 
-export function isVirtualDomPropertiesWithClasses(value: any): value is VirtualDomProperties {
-	return Boolean(value && value.classes);
-}
-
 export function assignChildProperties(target: WNode | HNode, index: number | string, properties: WidgetProperties | VirtualDomProperties): WNode | HNode {
 	const node = findIndex(target, index);
 	if (!node || !(isWNode(node) || isHNode(node))) {
@@ -21,9 +17,6 @@ export function assignProperties(target: HNode, properties: VirtualDomProperties
 export function assignProperties(target: WNode, properties: WidgetProperties): WNode;
 export function assignProperties(target: WNode | HNode, properties: WidgetProperties | VirtualDomProperties): WNode | HNode;
 export function assignProperties(target: WNode | HNode, properties: WidgetProperties | VirtualDomProperties): WNode | HNode {
-	if (isVirtualDomPropertiesWithClasses(properties) && typeof properties.classes === 'function') {
-		assign(properties, { classes: properties.classes() });
-	}
 	assign(target.properties, properties);
 	return target;
 }
