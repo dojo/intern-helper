@@ -10,6 +10,7 @@ declare const require: Require;
 registerSuite('ClientErrorCollector', {
 
 	'client errors are returned'() {
+		console.log(this.remote.session.capabilities.browserName);
 		const collector = new ClientErrorCollector(this.remote);
 
 		return this.remote
