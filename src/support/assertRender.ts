@@ -19,6 +19,21 @@ export interface AssertRenderOptions extends DiffOptions {
 }
 
 /**
+ * An internal function that returns a string that contains an array of child indexes which related to the message
+ * @param childIndex The index of the child to add to the message
+ * @param message The message, if any to prepend the child to
+ */
+function getChildMessage(childIndex: number, message: string = '') {
+	const lastIndex = message.lastIndexOf(']');
+	if (lastIndex === -1) {
+		return `[${childIndex}] ${message}`;
+	}
+	else {
+		return message.slice(0, lastIndex + 1) + `[${childIndex}]` + message.slice(lastIndex + 1);
+	}
+}
+
+/**
  * Internal function that throws an AssertionError
  * @param actual actual value
  * @param expected expected value
@@ -67,7 +82,7 @@ export default function assertRender(actual: DNode | DNode[], expected: DNode | 
 				throwAssertionError(actual, expected, `Children's length mismatch`, message);
 			}
 			actual.forEach((actualChild, index) => {
-				assertRender(actualChild, expected[index], (options || {}) as AssertRenderOptions, `[${index}]${message || ''}`);
+				assertRender(actualChild, expected[index], (options || {}) as AssertRenderOptions, getChildMessage(index, message));
 			});
 		}
 		else {
