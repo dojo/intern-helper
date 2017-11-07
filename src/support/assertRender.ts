@@ -19,6 +19,17 @@ export interface AssertRenderOptions extends DiffOptions {
 }
 
 /**
+ * Return a string that provides diagnostic information when comparing DNodes where one should be an array
+ * @param actual The actual DNode
+ * @param expected The expected DNode
+ */
+function getArrayPreamble(actual: DNode | DNode[], expected: DNode | DNode[]): string {
+	return Array.isArray(actual) ?
+		`Expected "${getTypeOf(expected)}" but got an array` :
+		`Expected an array but got "${getTypeOf(actual)}"`;
+}
+
+/**
  * An internal function that returns a string that contains an array of child indexes which related to the message
  * @param childIndex The index of the child to add to the message
  * @param message The message, if any to prepend the child to
@@ -31,6 +42,23 @@ function getChildMessage(childIndex: number, message: string = '') {
 	else {
 		return message.slice(0, lastIndex + 1) + `[${childIndex}]` + message.slice(lastIndex + 1);
 	}
+}
+
+/**
+ * Return a string that provides diagnostic information when two DNodes being compared are mismatched
+ * @param actual The actual DNode
+ * @param expected The expected DNode
+ */
+function getMismatchPreamble(actual: DNode, expected: DNode): string {
+	return `DNode type mismatch, expected "${getTypeOf(expected)}" actual "${getTypeOf(actual)}"`;
+}
+
+/**
+ * Return a string that represents the type of the value, including null as a seperate type.
+ * @param value The value to get the type of
+ */
+function getTypeOf(value: any) {
+	return value === null ? 'null' : typeof value;
 }
 
 /**
@@ -96,7 +124,7 @@ export default function assertRender(actual: DNode | DNode[], expected: DNode | 
 		assertChildren(actual, expected);
 	}
 	else if (Array.isArray(actual) || Array.isArray(expected)) {
-		throwAssertionError(actual, expected, Array.isArray(actual) ? `Expected "${expected === null ? 'null' : typeof expected}" but got an array` : `Expected an array but got "${actual === null ? 'null' : typeof actual}"`, message);
+		throwAssertionError(actual, expected, getArrayPreamble(actual, expected), message);
 	}
 	else if ((localIsHNode(actual) && localIsHNode(expected)) || (localIsWNode(actual) && localIsWNode(expected))) {
 		if (localIsHNode(actual) && localIsHNode(expected)) {
@@ -137,6 +165,6 @@ export default function assertRender(actual: DNode | DNode[], expected: DNode | 
 	}
 	else if (!(actual === null && expected === null)) {
 		/* There is a mismatch between the types of DNodes */
-		throwAssertionError(actual, expected, `DNode type mismatch, expected "${expected === null ? 'null' : typeof expected}" actual "${actual === null ? 'null' : typeof actual}"`, message);
+		throwAssertionError(actual, expected, getMismatchPreamble(actual, expected), message);
 	}
 }

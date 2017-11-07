@@ -14,7 +14,7 @@ import {
 	WidgetProperties,
 	WNode
 } from '@dojo/widget-core/interfaces';
-import { decorate, isWNode, v, w } from '@dojo/widget-core/d';
+import { decorate, isHNode, isWNode, v, w } from '@dojo/widget-core/d';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
 import { afterRender } from '@dojo/widget-core/decorators/afterRender';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
@@ -366,7 +366,7 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 		let { target = this.getDom(), key, ...sendOptions } = options;
 		if (key) {
 			const dnode = findDNodeByKey(this._widgetHarness.lastRender, key);
-			if (dnode && !isWNode(dnode)) {
+			if (isHNode(dnode)) {
 				target = (dnode as any).domNode as Element;
 			}
 			else {
