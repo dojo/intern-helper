@@ -738,8 +738,13 @@ registerSuite('harness', {
 	},
 
 	'.getRender()'() {
-		const widget = harness(MockWidget);
-		assertRender(widget.getRender(), v('div', { classes: [ 'foo' ] }));
+		class ChildTextWidget extends WidgetBase {
+			render() {
+				return v('div', {}, [ 'foo' ]);
+			}
+		}
+		const widget = harness(ChildTextWidget);
+		assertRender(widget.getRender(), v('div', {}, [ 'foo' ]));
 		widget.destroy();
 	},
 
