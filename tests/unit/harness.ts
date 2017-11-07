@@ -791,7 +791,7 @@ registerSuite('harness', {
 
 			widget.getRender();
 
-			assert.deepEqual(idStack, [ undefined ]);
+			assert.deepEqual(idStack, [ undefined, 'foo' ]);
 
 			const handle = widget.mockMeta(NodeId, {
 				get(key: string | number) {
@@ -805,7 +805,7 @@ registerSuite('harness', {
 
 			widget.getRender();
 
-			assert.deepEqual(idStack, [ undefined, 'qat' ]);
+			assert.deepEqual(idStack, [ undefined, 'foo', 'qat' ]);
 
 			handle.destroy();
 			widget.setProperties({
@@ -814,7 +814,7 @@ registerSuite('harness', {
 
 			widget.getRender();
 
-			assert.deepEqual(idStack, [ undefined, 'qat', undefined ]);
+			assert.deepEqual(idStack, [ undefined, 'foo', 'qat', undefined ]);
 
 			widget.destroy();
 		},
