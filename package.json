@@ -47,6 +47,7 @@
     "@types/sinon": "^1.16.31",
     "grunt": "~1.0.1",
     "grunt-dojo2": "latest",
+    "intern": "~4.1.0",
     "sinon": "^2.2.0",
     "typescript": "~2.4.1"
   }
