@@ -65,9 +65,9 @@ function findDNodeByKey(target: DNode, key: string | object): HNode | WNode | un
 function stubRender(target: DNode): DNode {
 	decorate(
 		target,
-		(dNode: WNode) => {
-			const { widgetConstructor, properties } = dNode;
-			dNode.widgetConstructor = StubWidget;
+		(dNode: DNode) => {
+			const { widgetConstructor, properties } = dNode as WNode;
+			(dNode as WNode).widgetConstructor = StubWidget;
 			(properties as StubWidgetProperties)._stubTag = WIDGET_STUB_CUSTOM_ELEMENT;
 			(properties as StubWidgetProperties)._widgetName = typeof widgetConstructor === 'string'
 				? widgetConstructor
@@ -263,7 +263,7 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 	}
 
 	constructor(widgetConstructor: Constructor<W>, root?: HTMLElement) {
-		super({});
+		super();
 
 		const widgetHarness = this._widgetHarness = new ProjectorWidgetHarness(widgetConstructor, this._metaMap);
 		// we want to control when the render gets scheduled, so we will hijack the projects one

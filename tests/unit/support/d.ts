@@ -382,7 +382,7 @@ registerSuite('support/virtualDom', {
 
 		'key is object'() {
 			const obj = {};
-			assertRender(findKey(v('div', { key: 'bar' }, [ v('span', { key: obj }), 'foo', null ]), obj)!, v('span', { key: obj }), 'should find child node');
+			assertRender(findKey(v('div', { key: 'bar' }, [ v('span', { key: obj } as any), 'foo', null ]), obj)!, v('span', { key: obj } as any), 'should find child node');
 		},
 
 		'value is WNode'() {
