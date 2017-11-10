@@ -225,12 +225,24 @@ registerSuite('support/assertRender', {
 				v('div',  { classes: [ null,  'bar', 'foo', undefined ] })
 			);
 
+			assertRender(
+				v('div', { classes: null as any }),
+				v('div', { classes: [] })
+			);
+
 			assert.throws(() => {
 				assertRender(
 					v('div', { classes: [ 'foo', null, 'bar' ] }),
 					v('div',  { classes: [ 'foo',  null, 'baz' ] })
 				);
 			}, AssertionError, 'The value of property "classes" is unexpected.');
+
+			assert.throws(() => {
+				assertRender(
+					v('div', { classes: [ 'foo', 'bar', 'baz' ] }),
+					v('div', { classes: [ 'foo', 'bar' ] })
+				);
+			});
 		}
 	},
 
@@ -413,12 +425,24 @@ registerSuite('support/assertRender', {
 				w(MockWidget,  { classes: [ null,  'bar', 'foo', undefined ] })
 			);
 
+			assertRender(
+				w(MockWidget, { classes: null as any }),
+				w(MockWidget, { classes: [] })
+			);
+
 			assert.throws(() => {
 				assertRender(
 					w(MockWidget, { classes: [ 'foo', null, 'bar' ] }),
 					w(MockWidget,  { classes: [ 'foo',  null, 'baz' ] })
 				);
 			}, AssertionError, 'The value of property "classes" is unexpected.');
+
+			assert.throws(() => {
+				assertRender(
+					w(MockWidget, { classes: [ 'foo', 'bar', 'baz' ] }),
+					w(MockWidget, { classes: [ 'foo', 'bar' ] })
+				);
+			});
 		}
 	},
 

@@ -376,7 +376,7 @@ function diffArray(a: any[], b: any, options: DiffOptions): SpliceRecord[] {
  * describe the differences
  *
  * @param a The first plain object to compare to
- * @param b The second plain bject to compare to
+ * @param b The second plain object to compare to
  * @param options An options bag that allows configuration of the behaviour of `diffPlainObject()`
  */
 function diffPlainObject(a: any, b: any, options: DiffOptions): (ConstructRecord | PatchRecord)[] {
