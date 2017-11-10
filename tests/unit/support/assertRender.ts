@@ -8,6 +8,7 @@ import WidgetBase from '@dojo/widget-core/WidgetBase';
 import { HNode, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
 
 interface MockWidgetProperties extends WidgetProperties {
+	classes?: (string | undefined | null)[];
 	foo?: string;
 	bar?: number;
 	baz?: () => void;
@@ -123,7 +124,7 @@ registerSuite('support/assertRender', {
 			}, AssertionError, 'Render unexpected: Expected children');
 		},
 
-		'unepxected children'() {
+		'unexpected children'() {
 			assert.throws(() => {
 				assertRender(
 					v('div', {}, []),
@@ -216,6 +217,20 @@ registerSuite('support/assertRender', {
 					v('div', { }, [ v('span', {}, [ w(MockWidget, { foo: 'baz', baz() { } }) ]) ])
 				);
 			}, AssertionError, 'Render unexpected');
+		},
+
+		'compare unique classes only'() {
+			assertRender(
+				v('div', { classes: [ 'foo', null, 'bar' ] }),
+				v('div',  { classes: [ null,  'bar', 'foo', undefined ] })
+			);
+
+			assert.throws(() => {
+				assertRender(
+					v('div', { classes: [ 'foo', null, 'bar' ] }),
+					v('div',  { classes: [ 'foo',  null, 'baz' ] })
+				);
+			}, AssertionError, 'The value of property "classes" is unexpected.');
 		}
 	},
 
@@ -390,6 +405,20 @@ registerSuite('support/assertRender', {
 				w(MockWidget, <any> { bind }),
 				w(MockWidget, { })
 			);
+		},
+
+		'compare unique classes only'() {
+			assertRender(
+				w(MockWidget, { classes: [ 'foo', null, 'bar' ] }),
+				w(MockWidget,  { classes: [ null,  'bar', 'foo', undefined ] })
+			);
+
+			assert.throws(() => {
+				assertRender(
+					w(MockWidget, { classes: [ 'foo', null, 'bar' ] }),
+					w(MockWidget,  { classes: [ 'foo',  null, 'baz' ] })
+				);
+			}, AssertionError, 'The value of property "classes" is unexpected.');
 		}
 	},
 
