@@ -15,7 +15,8 @@ function  assignChildPropertiesByKeyOrIndex(
 	const { found: node } = findByKeyOrIndex(target, keyOrIndex, byKey);
 
 	if (!node || !(isWNode(node) || isHNode(node))) {
-		throw new TypeError(`${(byKey || typeof keyOrIndex === 'object') ? 'Key' : 'Index'} of "${keyOrIndex}" is not resolving to a valid target`);
+		const keyOrIndexString = typeof keyOrIndex === 'string' ? keyOrIndex : JSON.stringify(keyOrIndex);
+		throw new TypeError(`${(byKey || typeof keyOrIndex === 'object') ? 'Key' : 'Index'} of "${keyOrIndexString}" is not resolving to a valid target`);
 	}
 	assignProperties(node, properties);
 	return target;
@@ -25,7 +26,7 @@ export function assignChildProperties(target: WNode | HNode, index: number | str
 	return assignChildPropertiesByKeyOrIndex(target, index,  properties);
 }
 
-export function  assignChildPropertiesByKey(target: WNode | HNode,  key: string, properties: WidgetProperties | VirtualDomProperties): WNode | HNode {
+export function  assignChildPropertiesByKey(target: WNode | HNode,  key: string | object, properties: WidgetProperties | VirtualDomProperties): WNode | HNode {
 	return assignChildPropertiesByKeyOrIndex(target, key, properties, true);
 }
 
@@ -65,7 +66,7 @@ function replaceChildByKeyOrIndex(
 
 	if (!parent || typeof index === 'undefined' || !parent.children) {
 		if (byKey || typeof indexOrKey === 'object') {
-			throw new TypeError(`Key of "${indexOrKey}" is not resolving to a valid target`);
+			throw new TypeError(`Key of "${typeof indexOrKey === 'string' ? indexOrKey : JSON.stringify(indexOrKey)}" is not resolving to a valid target`);
 		}
 		else {
 			throw new TypeError(`Index of "${indexOrKey}" is not resolving to a valid target`);
@@ -133,8 +134,8 @@ function findByKey(
 		.forEach((child, index) => {
 			if (isNode(child)) {
 				if (found) {
-					if (findByKey(child, key, target, index)) {
-						console.warn(`Duplicate key of "${key}" found.`);
+					if (findByKey(child, key, target, index).found) {
+						console.warn(`Duplicate key of "${typeof key === 'string' ? key : JSON.stringify(key)}" found.`);
 					}
 				}
 				else {
@@ -197,7 +198,7 @@ function replaceChildPropertiesByKeyOrIndex(
 
 	if (!found || !(isWNode(found) || isHNode(found))) {
 		if (byKey || typeof indexOrKey === 'object') {
-			throw new TypeError(`Key of "${indexOrKey}" is not resolving to a valid target`);
+			throw new TypeError(`Key of "${typeof indexOrKey === 'string' ? indexOrKey : JSON.stringify(indexOrKey)}" is not resolving to a valid target`);
 		}
 		else {
 			throw new TypeError(`Index of "${indexOrKey}" is not resolving to a valid target`);
