@@ -143,10 +143,12 @@ export default function assertRender(actual: DNode | DNode[], expected: DNode | 
 			}
 		}
 		/* Inject a custom comparator for class names */
-		const expectedClasses: SupportedClassName[] | undefined = expected.properties && (expected.properties as any).classes;
+		const expectedClasses: SupportedClassName | SupportedClassName[] = expected.properties && (expected.properties as any).classes;
 		if (expectedClasses && !isCustomDiff(expectedClasses)) {
-			(expected.properties as any).classes = compareProperty((value?: SupportedClassName[]) => {
-				const expectedSet = new Set(expectedClasses.filter(expectedClass => Boolean(expectedClass)));
+			(expected.properties as any).classes = compareProperty((value: SupportedClassName | SupportedClassName[]) => {
+				const expectedValue = (typeof expectedClasses === 'string' ? [ expectedClasses ] : expectedClasses) || [];
+				value = (typeof value === 'string' ? [ value ] : value) || [];
+				const expectedSet = new Set(expectedValue.filter(expectedClass => Boolean(expectedClass)));
 				const actualSet = new Set((value || []).filter(actualClass => Boolean(actualClass)));
 
 				if (expectedSet.size !== actualSet.size) {
@@ -158,7 +160,8 @@ export default function assertRender(actual: DNode | DNode[], expected: DNode | 
 					allMatch = allMatch && expectedSet.has(actualClass);
 				});
 				return allMatch;
-			});
+			}
+);
 		}
 		const delta = diff(actual.properties, expected.properties, diffOptions);
 		if (delta.length) {
