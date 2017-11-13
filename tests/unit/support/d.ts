@@ -413,7 +413,6 @@ registerSuite('support/virtualDom', {
 			warnStub.restore();
 		},
 
-
 		'duplicate object keys warn'() {
 			const warnStub = stub(console, 'warn');
 			const key = {};
