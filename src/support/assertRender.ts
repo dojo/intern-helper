@@ -146,10 +146,10 @@ export default function assertRender(actual: DNode | DNode[], expected: DNode | 
 		const expectedClasses: SupportedClassName | SupportedClassName[] = expected.properties && (expected.properties as any).classes;
 		if (expectedClasses && !isCustomDiff(expectedClasses)) {
 			(expected.properties as any).classes = compareProperty((value: SupportedClassName | SupportedClassName[]) => {
-				const expectedValue = (typeof expectedClasses === 'string' ? [ expectedClasses ] : expectedClasses) || [];
+				const expectedValue = typeof expectedClasses === 'string' ? [ expectedClasses ] : expectedClasses;
 				value = (typeof value === 'string' ? [ value ] : value) || [];
 				const expectedSet = new Set(expectedValue.filter(expectedClass => Boolean(expectedClass)));
-				const actualSet = new Set((value || []).filter(actualClass => Boolean(actualClass)));
+				const actualSet = new Set(value.filter(actualClass => Boolean(actualClass)));
 
 				if (expectedSet.size !== actualSet.size) {
 					return false;
