@@ -2,7 +2,7 @@ import 'pepjs';
 
 import Evented from '@dojo/core/Evented';
 import { createHandle } from '@dojo/core/lang';
-import { Handle } from '@dojo/interfaces/core';
+import { Handle } from '@dojo/core/interfaces';
 import { assign } from '@dojo/shim/object';
 import WeakMap from '@dojo/shim/WeakMap';
 import {
@@ -65,15 +65,15 @@ function findDNodeByKey(target: DNode, key: string | object): HNode | WNode | un
 function stubRender(target: DNode): DNode {
 	decorate(
 		target,
-		(dNode: DNode) => {
-			const { widgetConstructor, properties } = dNode as WNode;
-			(dNode as WNode).widgetConstructor = StubWidget;
+		(dNode: WNode) => {
+			const { widgetConstructor, properties } = dNode;
+			dNode.widgetConstructor = StubWidget;
 			(properties as StubWidgetProperties)._stubTag = WIDGET_STUB_CUSTOM_ELEMENT;
 			(properties as StubWidgetProperties)._widgetName = typeof widgetConstructor === 'string'
 				? widgetConstructor
 				: (widgetConstructor as any).name || '<Anonymous>';
 		},
-		(dNode) => isWNode(dNode)
+		isWNode
 	);
 	return target;
 }
