@@ -440,8 +440,8 @@ registerSuite('support/virtualDom', {
 		},
 
 		'no children returns undefined'() {
-			const actual = w('widget', {});
-			assert.isUndefined(findIndex(actual, 0));
+			assert.isUndefined(findIndex(v('div', {}), 0));
+			assert.isUndefined(findIndex(w('widget', {}), 0));
 		},
 
 		'by string deep index'() {
