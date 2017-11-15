@@ -133,7 +133,7 @@ function findByKey(
 	target.children
 		.forEach((child, index) => {
 			if (isNode(child)) {
-				if (found) {
+				if (found && found.found) {
 					if (findByKey(child, key, target, index).found) {
 						console.warn(`Duplicate key of "${typeof key === 'object' ? JSON.stringify(key) : key }" found.`);
 					}
