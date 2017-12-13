@@ -254,6 +254,7 @@ export class Harness<W extends WidgetBase<WidgetProperties>> extends Evented {
 		if (this._children) {
 			this._widgetHarness.setChildren(this._children);
 			this._children = undefined;
+
 		}
 		if (!this._projectorHandle) {
 			this._widgetHarness.async = false;
