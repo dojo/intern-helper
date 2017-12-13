@@ -1,7 +1,7 @@
 const { registerSuite } = intern.getInterface('object');
 const { assert } = intern.getPlugin('chai');
 
-import harness, { MetaMockContext } from '../../src/harness';
+import harness, { MetaMockContext, findDNodeByKey } from '../../src/harness';
 import { compareProperty } from '../../src/support/d';
 
 import { v, w } from '@dojo/widget-core/d';
@@ -992,6 +992,12 @@ registerSuite('harness', {
 			handle1.destroy();
 
 			widget.destroy();
+		}
+	},
+
+	'findDNodeByKey': {
+		'should not error with string'() {
+			findDNodeByKey('foo', 'bar');
 		}
 	}
 });

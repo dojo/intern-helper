@@ -36,11 +36,11 @@ let harnessId = 0;
  * @param target the root DNode to search
  * @param key the key to match
  */
-function findDNodeByKey(target: RenderResults, key: string | object): HNode | WNode | undefined {
+export function findDNodeByKey(target: RenderResults, key: string | object): HNode | WNode | undefined {
 	if (!target) {
 		return;
 	}
-	if (target instanceof Array) {
+	if (Array.isArray(target)) {
 		let found: HNode | WNode | undefined;
 		target.forEach((node) => {
 			if (found) {
@@ -53,9 +53,10 @@ function findDNodeByKey(target: RenderResults, key: string | object): HNode | WN
 			}
 		});
 		return found;
-	} else {
-		if (typeof target === 'object') {
-			if (target && typeof target === 'object' && target.properties && target.properties.key === key) {
+	}
+	else {
+		if (target && typeof target === 'object') {
+			if (target.properties && target.properties.key === key) {
 				return target;
 			}
 			return findDNodeByKey(target.children, key);
@@ -69,7 +70,7 @@ function findDNodeByKey(target: RenderResults, key: string | object): HNode | WN
  */
 function stubRender(target: RenderResults): RenderResults {
 	if (target) {
-		if (target instanceof Array) {
+		if (Array.isArray(target)) {
 			target.forEach((node) => {
 				decorateTarget(node);
 			});

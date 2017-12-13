@@ -54,8 +54,8 @@ export default function callListener(node: RenderResults, method: string, option
 	});
 }
 
-function resolveTarget(node: RenderResults, options: CallListenerOptions = {}): any[] {
-	if (node instanceof Array) {
+function resolveTarget(node: RenderResults, options: CallListenerOptions): any[] {
+	if (Array.isArray(node)) {
 		let resolvedTargets: DNode[] = [];
 		for (let i = 0, len = node.length; i < len; i++) {
 			const item = node[i];
@@ -67,12 +67,14 @@ function resolveTarget(node: RenderResults, options: CallListenerOptions = {}): 
 			}
 		}
 		return resolvedTargets;
-	} else {
+	}
+	else {
 		let resolvedTarget: any;
 		const { index, key, target } = options;
 		if (target) {
 			resolvedTarget = target;
-		} else if (node != null && (typeof node !== 'string')) {
+		}
+		else if (node != null && (typeof node !== 'string')) {
 			if (key) {
 				resolvedTarget = findKey(node, key);
 			}
