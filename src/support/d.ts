@@ -2,7 +2,7 @@ import { assign } from '@dojo/core/lang';
 import { DNode, HNode, VirtualDomProperties, WidgetProperties, WNode } from '@dojo/widget-core/interfaces';
 import { isHNode, isWNode } from '@dojo/widget-core/d';
 import AssertionError from './AssertionError';
-import { CustomDiff } from './compare';
+import { CustomDiff } from '@dojo/core/compare';
 
 type FoundNodeInfo<T extends DNode = DNode> = { found?: T, parent?: WNode | HNode | undefined, index?: number };
 

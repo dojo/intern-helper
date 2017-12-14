@@ -3,7 +3,7 @@ import Set from '@dojo/shim/Set';
 import { isHNode, isWNode } from '@dojo/widget-core/d';
 import { DNode, HNode, WNode, SupportedClassName } from '@dojo/widget-core/interfaces';
 import AssertionError from './AssertionError';
-import { diff, DiffOptions, getComparableObjects, isCustomDiff } from './compare';
+import { diff, DiffOptions, getComparableObjects, isCustomDiff } from '@dojo/core/compare';
 import { compareProperty } from './d';
 
 const RENDER_FAIL_MESSAGE = 'Render unexpected';
