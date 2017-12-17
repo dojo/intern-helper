@@ -48,6 +48,7 @@
     "@types/sinon": "^1.16.31",
     "grunt": "~1.0.1",
     "grunt-dojo2": "latest",
+    "grunt-tslint": "5.0.1",
     "husky": "0.14.3",
     "intern": "~4.1.0",
     "lint-staged": "6.0.0",
