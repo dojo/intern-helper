@@ -51,6 +51,24 @@ registerSuite('plugins/postcssRequirePlugin', {
 
 			assert.strictEqual(moduleStub.callCount, 1);
 			assert.equal(moduleStub.lastCall.args[0], options);
+		},
+
+		'not a node environment; warns'() {
+			const oldIntern = intern;
+			const mockIntern = {
+				emit: stub(),
+				environment: 'tacos'
+			};
+			try {
+				(<any>global).intern = mockIntern;
+				const callback = registerPluginStub.lastCall.args[1];
+				callback();
+				(<any>global).intern = oldIntern;
+				assert.strictEqual(mockIntern.emit.callCount, 1);
+				assert.strictEqual(mockIntern.emit.lastCall.args[0], 'warning');
+			} finally {
+				(<any>global).intern = oldIntern;
+			}
 		}
 	}
 });
