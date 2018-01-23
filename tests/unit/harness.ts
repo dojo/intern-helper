@@ -1,5 +1,4 @@
 const { describe, it } = intern.getInterface('bdd');
-// const { assert } = intern.getPlugin('chai');
 
 import { harness } from './../../src/harness';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
@@ -7,14 +6,13 @@ import { v, w } from '@dojo/widget-core/d';
 
 class MyWidget extends WidgetBase {
 	_count = 0;
-	_onclick(event: MouseEvent) {
-		event.stopPropagation();
+	_onclick() {
 		this._count++;
 		this.invalidate();
 	}
 
-	_otherOnClick() {
-		this._count = 50;
+	_otherOnClick(count: any = 50) {
+		this._count = count;
 		this.invalidate();
 	}
 
@@ -26,39 +24,37 @@ class MyWidget extends WidgetBase {
 }
 
 describe('harness', () => {
-	it('try my harness', () => {
+	it('expect', () => {
 		const h = harness(() => w(MyWidget, {}));
-		h.expectRender(() =>
-			v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])])
-		);
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])]));
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])]));
 	});
 
-	it('try my harness - fail', () => {
+	it('expect partial', () => {
 		const h = harness(() => w(MyWidget, {}));
-		h.expectRender(() =>
-			v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello fail'])])
-		);
+		h.expectPartial('*[key="span"]', () => v('span', { key: 'span', onclick: () => {} }, ['hello 0']));
 	});
 
-	it('with trigger', () => {
+	it('trigger by tag', () => {
 		const h = harness(() => w(MyWidget, {}));
-		h.expectRender(() =>
-			v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])])
-		);
-		h.trigger({ name: 'onclick' });
-		h.expectRender(() =>
-			v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 50'])])
-		);
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])]));
+		h.trigger('div', 'onclick');
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 50'])]));
+		h.trigger('div', 'onclick', 100);
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 100'])]));
 	});
 
-	it('with trigger on key', () => {
+	it('trigger by key selector', () => {
 		const h = harness(() => w(MyWidget, {}));
-		h.expectRender(() =>
-			v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])])
-		);
-		h.trigger({ name: 'onclick', key: 'span' });
-		h.expectRender(() =>
-			v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 1'])])
-		);
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])]));
+		h.trigger('*[key="span"]', 'onclick');
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 1'])]));
+	});
+
+	it('trigger with non matching selector', () => {
+		const h = harness(() => w(MyWidget, {}));
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])]));
+		h.trigger('*[key="other"]', 'onclick');
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])]));
 	});
 });
