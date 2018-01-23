@@ -44,6 +44,12 @@ describe('harness', () => {
 		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 100'])]));
 	});
 
+	it('trigger without expect', () => {
+		const h = harness(() => w(MyWidget, {}));
+		h.trigger('*[key="span"]', 'onclick');
+		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 1'])]));
+	});
+
 	it('trigger by key selector', () => {
 		const h = harness(() => w(MyWidget, {}));
 		h.expect(() => v('div', { onclick: () => {} }, [v('span', { key: 'span', onclick: () => {} }, ['hello 0'])]));

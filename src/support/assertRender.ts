@@ -13,7 +13,7 @@ export function formatDNodes(nodes: DNode | DNode[], depth: number = 0) {
 	nodes = Array.isArray(nodes) ? nodes : [nodes];
 	let tabs = '';
 	for (let i = 0; i < depth; i++) {
-		tabs = tabs + '\t';
+		tabs = `${tabs}\t`;
 	}
 	const formattedNode: string = nodes.reduce((result: string, node, index) => {
 		if (node === null || node === undefined) {
