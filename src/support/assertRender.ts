@@ -28,27 +28,37 @@ export function formatDNodes(nodes: DNode | DNode[], depth: number = 0) {
 			return `${result}"${node}"`;
 		}
 
-		result = result + formatNode(node);
+		result = `${result}${formatNode(node, tabs)}`;
 		if (node.children && node.children.length > 0) {
-			result = result + `, [\n${formatDNodes(node.children, depth + 1)}\n${tabs}]`;
+			result = `${result}, [\n${formatDNodes(node.children, depth + 1)}\n${tabs}]`;
 		}
 		return `${result})`;
 	}, '');
 	return formattedNode;
 }
 
-function formatNode(node: WNode | VNode) {
-	const properties = Object.keys(node.properties)
+function formatProperties(properties: any, tabs: string) {
+	properties = Object.keys(properties)
 		.sort()
-		.reduce((properties: any, key) => {
-			properties[key] = (node.properties as any)[key];
-			return properties;
+		.reduce((props: any, key) => {
+			props[key] = properties[key];
+			return props;
 		}, {});
+	properties = JSON.stringify(properties, replacer, `${tabs}\t`).slice(0, -1);
+	return `${properties}${tabs}}`;
+}
+
+function formatNode(node: WNode | VNode, tabs: any) {
+	const propertyKeyCount = Object.keys(node.properties).length;
+	let properties = propertyKeyCount > 0 ? formatProperties(node.properties, tabs) : '{}';
 	if (isWNode(node)) {
-		// TODO what do we do about IE11 that doesn't support function names?
-		return `w("${(node.widgetConstructor as any).name}", ${JSON.stringify(properties, replacer, '\t')}`;
+		let name =
+			typeof node.widgetConstructor === 'string'
+				? `"${node.widgetConstructor}"`
+				: (node.widgetConstructor as any).name;
+		return `w(${name}, ${properties}`;
 	}
-	return `v("${node.tag}", ${JSON.stringify(properties, replacer, '\t')}`;
+	return `v("${node.tag}", ${properties}`;
 }
 
 export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[], message?: string) {
@@ -62,10 +72,10 @@ export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[],
 		}
 		if (part.added) {
 			diffFound = true;
-			result = `${result}+${part.value}`;
+			result = `${result}(A)${part.value}`;
 		} else if (part.removed) {
 			diffFound = true;
-			result = `${result}-${part.value}`;
+			result = `${result}(E)${part.value}`;
 		} else {
 			result = `${result}${part.value}`;
 		}
