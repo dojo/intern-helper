@@ -1,7 +1,7 @@
-import { DNode } from '@dojo/widget-core/interfaces';
+import { DNode, DefaultWidgetBaseInterface } from '@dojo/widget-core/interfaces';
 import { isVNode, isWNode } from '@dojo/widget-core/d';
 
-export type TestFunction = (elem: DNode) => boolean;
+export type TestFunction = (elem: DNode<DefaultWidgetBaseInterface>) => boolean;
 export const adapter = {
 	isTag(elem: DNode) {
 		return isVNode(elem);

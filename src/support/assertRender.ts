@@ -38,11 +38,17 @@ export function formatDNodes(nodes: DNode | DNode[], depth: number = 0) {
 }
 
 function formatNode(node: WNode | VNode) {
+	const properties = Object.keys(node.properties)
+		.sort()
+		.reduce((properties: any, key) => {
+			properties[key] = (node.properties as any)[key];
+			return properties;
+		}, {});
 	if (isWNode(node)) {
 		// TODO what do we do about IE11 that doesn't support function names?
-		return `w("${(node.widgetConstructor as any).name}", ${JSON.stringify(node.properties, replacer)}`;
+		return `w("${(node.widgetConstructor as any).name}", ${JSON.stringify(properties, replacer, '\t')}`;
 	}
-	return `v("${node.tag}", ${JSON.stringify(node.properties, replacer)}`;
+	return `v("${node.tag}", ${JSON.stringify(properties, replacer, '\t')}`;
 }
 
 export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[], message?: string) {

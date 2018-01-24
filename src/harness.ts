@@ -5,7 +5,6 @@ import adapter from './support/adapter';
 export function harness(renderFunc: any) {
 	let renderResult: any = null;
 	let invalidated = true;
-
 	let wNode = renderFunc();
 	const { widgetConstructor, properties, children } = wNode;
 	const widget = new class extends widgetConstructor {

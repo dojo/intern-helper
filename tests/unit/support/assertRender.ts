@@ -13,7 +13,7 @@ class MockWidget extends WidgetBase {
 
 class OtherWidget extends WidgetBase {
 	render() {
-		return v('div', ['text node', undefined, w(MockWidget, {})]);
+		return v('div', { key: 'one', classes: 'class' }, ['text node', undefined, w(MockWidget, {})]);
 	}
 }
 
@@ -26,11 +26,22 @@ describe('support/assertRender', () => {
 		});
 	});
 
+	it('Should not throw when actual and expected but properties are ordered differently', () => {
+		const widget = new OtherWidget();
+		const renderResult = widget.__render__();
+		assert.doesNotThrow(() => {
+			assertRender(
+				renderResult,
+				v('div', { classes: 'class', key: 'one' }, ['text node', undefined, w(MockWidget, {})])
+			);
+		});
+	});
+
 	it('Should throw when actual and expected do not match', () => {
 		const widget = new OtherWidget();
 		const renderResult = widget.__render__();
 		assert.throws(() => {
-			assertRender(renderResult, v('div', ['text node', v('span')]));
+			assertRender(renderResult, v('div', { key: 'one', classes: 'class' }, ['text node', v('span')]));
 		});
 	});
 });
