@@ -1,8 +1,26 @@
-import { DNode, DefaultWidgetBaseInterface } from '@dojo/widget-core/interfaces';
+import { DNode, DefaultWidgetBaseInterface, WNode, VNode } from '@dojo/widget-core/interfaces';
 import { isVNode, isWNode } from '@dojo/widget-core/d';
+import * as cssSelect from 'css-select-umd';
 
 export type TestFunction = (elem: DNode<DefaultWidgetBaseInterface>) => boolean;
-export const adapter = {
+
+export const parseSelector = (selector: string) => {
+	const selectors = selector.split(' ');
+	return selectors
+		.map((selector) => {
+			const keySigilIndex = selector.indexOf('@');
+			if (keySigilIndex === 0) {
+				return `[key="${selector.substr(1)}"]`;
+			} else if (keySigilIndex > 0) {
+				const key = selector.substring(keySigilIndex + 1);
+				return `${selector.slice(0, keySigilIndex)}[key="${key}"]`;
+			}
+			return selector;
+		})
+		.join(' ');
+};
+
+export const adapter: any = {
 	isTag(elem: DNode) {
 		return isVNode(elem);
 	},
@@ -17,6 +35,13 @@ export const adapter = {
 	},
 	getAttributeValue(elem: DNode, name: string) {
 		if (isVNode(elem) || isWNode(elem)) {
+			if (name === 'class') {
+				const classes = (elem.properties as any).classes;
+				if (Array.isArray(classes)) {
+					return classes.join(' ');
+				}
+				return classes;
+			}
 			return (elem.properties as any)[name];
 		}
 	},
@@ -34,11 +59,15 @@ export const adapter = {
 			return elem.tag;
 		}
 	},
-	getParent() {
-		// no-op for now
+	getParent(elem: DNode) {
+		if (isVNode(elem) || isWNode(elem)) {
+			return (elem as any).parent;
+		}
 	},
-	getSiblings() {
-		// no-op for now
+	getSiblings(elem: DNode) {
+		if (isVNode(elem) || isWNode(elem)) {
+			return (elem as any).parent.children;
+		}
 	},
 	findOne(test: TestFunction, arr: DNode[]): DNode {
 		let elem = null;
@@ -69,4 +98,10 @@ export const adapter = {
 	}
 };
 
-export default adapter as any;
+export function select(selector: string, nodes: DNode | DNode[]): (WNode | VNode)[] {
+	nodes = Array.isArray(nodes) ? nodes : [nodes];
+	selector = parseSelector(selector);
+	return cssSelect(selector, nodes, { adapter }) as (WNode | VNode)[];
+}
+
+export default select;

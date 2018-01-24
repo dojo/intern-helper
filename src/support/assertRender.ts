@@ -5,6 +5,8 @@ import * as diff from 'diff';
 function replacer(key: string, value: any) {
 	if (typeof value === 'function') {
 		return 'function';
+	} else if (typeof value === 'undefined') {
+		return 'undefined';
 	}
 	return value;
 }
@@ -67,15 +69,12 @@ export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[],
 	const diffResult = diff.diffLines(parsedActual, parsedExpected);
 	let diffFound = false;
 	const parsedDiff = diffResult.reduce((result: string, part, index) => {
-		if (index > 0) {
-			result = `\n${result}`;
-		}
 		if (part.added) {
 			diffFound = true;
-			result = `${result}(A)${part.value}`;
+			result = `${result}(E)${part.value}`;
 		} else if (part.removed) {
 			diffFound = true;
-			result = `${result}(E)${part.value}`;
+			result = `${result}(A)${part.value}`;
 		} else {
 			result = `${result}${part.value}`;
 		}

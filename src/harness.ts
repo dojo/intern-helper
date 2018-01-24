@@ -1,8 +1,8 @@
 import assertRender from './support/assertRender';
-import * as select from 'css-select-umd';
-import adapter from './support/adapter';
-import { WNode, DNode, VNode } from '@dojo/widget-core/interfaces';
+import { select } from './support/selector';
+import { WNode, DNode } from '@dojo/widget-core/interfaces';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
+import { decorateNodes } from './support/utils';
 
 export interface CustomCompare {
 	selector: string;
@@ -29,12 +29,14 @@ export function harness(renderFunc: () => WNode<WidgetBase>, customCompares: Cus
 		throw new Error('Harness does not support registry items');
 	}
 
-	function _runCompares(nodes: DNode, isExpected: boolean = false) {
+	function _runCompares(nodes: DNode | DNode[], isExpected: boolean = false) {
 		customCompares.forEach(({ selector, property, compare }) => {
-			const [item] = select<DNode, VNode | WNode>(selector, [nodes], { adapter });
-			if (item) {
-				(item.properties as any)[property] = isExpected ? true : compare((item.properties as any)[property]);
-			}
+			const items = select(selector, nodes);
+			items.forEach((item: any) => {
+				if (item.properties && item.properties[property] !== undefined) {
+					item.properties[property] = isExpected ? true : compare(item.properties[property]);
+				}
+			});
 		});
 	}
 
@@ -43,7 +45,7 @@ export function harness(renderFunc: () => WNode<WidgetBase>, customCompares: Cus
 		widget.__setProperties__(properties);
 		widget.__setChildren__(children);
 		if (invalidated) {
-			renderResult = widget.__render__();
+			renderResult = decorateNodes(widget.__render__());
 			_runCompares(renderResult);
 			invalidated = false;
 		}
@@ -51,10 +53,10 @@ export function harness(renderFunc: () => WNode<WidgetBase>, customCompares: Cus
 
 	function _expect(expectedRenderFunc: any, selector?: string) {
 		_tryRender();
-		const expectedRenderResult = expectedRenderFunc();
+		const expectedRenderResult = decorateNodes(expectedRenderFunc());
 		_runCompares(expectedRenderResult, true);
 		if (selector) {
-			const [firstItem] = select(selector, [renderResult], { adapter });
+			const [firstItem] = select(selector, renderResult);
 			assertRender(firstItem, expectedRenderResult);
 		} else {
 			assertRender(renderResult, expectedRenderResult);
@@ -70,9 +72,9 @@ export function harness(renderFunc: () => WNode<WidgetBase>, customCompares: Cus
 		},
 		trigger(selector: string, name: string, ...args: any[]) {
 			_tryRender();
-			const [firstItem] = select(selector, [renderResult], { adapter });
+			const [firstItem] = select(selector, renderResult);
 			if (firstItem) {
-				const triggerFunction = firstItem.properties[name];
+				const triggerFunction = (firstItem.properties as any)[name];
 				triggerFunction.apply(widget, args);
 			}
 		}

@@ -19,11 +19,12 @@ class MyWidget extends WidgetBase {
 	}
 
 	render() {
-		return v('div', { onclick: this._otherOnClick }, [
+		return v('div', { classes: ['root', 'other'], onclick: this._otherOnClick }, [
 			v(
 				'span',
 				{
 					key: 'span',
+					classes: 'span',
 					style: 'width: 100px',
 					id: 'random-id',
 					onclick: this._onclick
@@ -40,15 +41,19 @@ describe('harness', () => {
 	it('expect', () => {
 		const h = harness(() => w(MyWidget, {}));
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
 		);
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
@@ -58,7 +63,9 @@ describe('harness', () => {
 	it('expect partial for VNode', () => {
 		const h = harness(() => w(MyWidget, {}));
 		h.expectPartial('*[key="span"]', () =>
-			v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 0'])
+			v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+				'hello 0'
+			])
 		);
 	});
 
@@ -77,24 +84,72 @@ describe('harness', () => {
 	it('trigger by tag', () => {
 		const h = harness(() => w(MyWidget, {}));
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
 		);
 		h.trigger('div', 'onclick');
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 50']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 50'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
 		);
 		h.trigger('div', 'onclick', 100);
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 100']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 100'
+				]),
+				w(ChildWidget, { key: 'widget', id: 'random-id' }),
+				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
+			])
+		);
+	});
+
+	it('trigger by class', () => {
+		const h = harness(() => w(MyWidget, {}));
+		h.trigger('.span', 'onclick');
+		h.expect(() =>
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 1'
+				]),
+				w(ChildWidget, { key: 'widget', id: 'random-id' }),
+				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
+			])
+		);
+	});
+
+	it('trigger by class from classes array', () => {
+		const h = harness(() => w(MyWidget, {}));
+		h.trigger('.root', 'onclick');
+		h.expect(() =>
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 50'
+				]),
+				w(ChildWidget, { key: 'widget', id: 'random-id' }),
+				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
+			])
+		);
+	});
+
+	it('trigger by nested selector', () => {
+		const h = harness(() => w(MyWidget, {}));
+		h.trigger('.root span', 'onclick');
+		h.expect(() =>
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 1'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
@@ -105,8 +160,10 @@ describe('harness', () => {
 		const h = harness(() => w(MyWidget, {}));
 		h.trigger('*[key="span"]', 'onclick');
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 1']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 1'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
@@ -116,16 +173,20 @@ describe('harness', () => {
 	it('trigger by key selector', () => {
 		const h = harness(() => w(MyWidget, {}));
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
 		);
 		h.trigger('*[key="span"]', 'onclick');
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 1']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 1'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
@@ -135,16 +196,20 @@ describe('harness', () => {
 	it('trigger with non matching selector', () => {
 		const h = harness(() => w(MyWidget, {}));
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
 		);
 		h.trigger('*[key="other"]', 'onclick');
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
@@ -156,8 +221,10 @@ describe('harness', () => {
 			{ selector: '*[key="span"]', property: 'id', compare: (property: any) => typeof property === 'string' }
 		]);
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', style: 'width: 100px', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', id: '', classes: 'span', style: 'width: 100px', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
@@ -169,9 +236,11 @@ describe('harness', () => {
 			{ selector: '*[key="widget"]', property: 'id', compare: (property: any) => typeof property === 'string' }
 		]);
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', id: 'random-id', style: 'width: 100px', onclick: () => {} }, ['hello 0']),
-				w(ChildWidget, { key: 'widget' }),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', id: 'random-id', classes: 'span', style: 'width: 100px', onclick: () => {} }, [
+					'hello 0'
+				]),
+				w(ChildWidget, { key: 'widget', id: '' }),
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
 		);
@@ -182,10 +251,12 @@ describe('harness', () => {
 			{ selector: '*[key="registry"]', property: 'id', compare: (property: any) => typeof property === 'string' }
 		]);
 		h.expect(() =>
-			v('div', { onclick: () => {} }, [
-				v('span', { key: 'span', id: 'random-id', style: 'width: 100px', onclick: () => {} }, ['hello 0']),
+			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+				v('span', { key: 'span', id: 'random-id', classes: 'span', style: 'width: 100px', onclick: () => {} }, [
+					'hello 0'
+				]),
 				w(ChildWidget, { key: 'widget', id: 'random-id' }),
-				w('registry-item', { key: 'registry' })
+				w<ChildWidget>('registry-item', { key: 'registry', id: '' })
 			])
 		);
 	});

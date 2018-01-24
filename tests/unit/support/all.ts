@@ -1,2 +1,2 @@
-import './adapter';
+import './selector';
 import './assertRender';
