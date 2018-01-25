@@ -209,7 +209,7 @@ describe('harness', () => {
 
 	it('custom compare for VNode', () => {
 		const h = harness(() => w(MyWidget, {}), [
-			{ selector: '*[key="span"]', property: 'id', compare: (property: any) => typeof property === 'string' }
+			{ selector: '*[key="span"]', property: 'id', comparator: (property: any) => typeof property === 'string' }
 		]);
 		h.expect(() =>
 			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
@@ -224,7 +224,7 @@ describe('harness', () => {
 
 	it('custom compare for constructor WNode', () => {
 		const h = harness(() => w(MyWidget, {}), [
-			{ selector: '*[key="widget"]', property: 'id', compare: (property: any) => typeof property === 'string' }
+			{ selector: '*[key="widget"]', property: 'id', comparator: (property: any) => typeof property === 'string' }
 		]);
 		h.expect(() =>
 			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
@@ -239,7 +239,11 @@ describe('harness', () => {
 
 	it('custom compare for registry item WNode', () => {
 		const h = harness(() => w(MyWidget, {}), [
-			{ selector: '*[key="registry"]', property: 'id', compare: (property: any) => typeof property === 'string' }
+			{
+				selector: '*[key="registry"]',
+				property: 'id',
+				comparator: (property: any) => typeof property === 'string'
+			}
 		]);
 		h.expect(() =>
 			v('div', { classes: ['root', 'other'], onclick: () => {} }, [

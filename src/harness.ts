@@ -4,13 +4,13 @@ import { WNode, DNode, WidgetBaseInterface, Constructor } from '@dojo/widget-cor
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { decorateNodes } from './support/utils';
 
-export interface CustomCompare {
+export interface CustomComparator {
 	selector: string;
 	property: string;
-	compare: (value: any) => boolean;
+	comparator: (value: any) => boolean;
 }
 
-export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customCompares: CustomCompare[] = []) {
+export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComparator: CustomComparator[] = []) {
 	let renderResult: any = null;
 	let invalidated = true;
 	let wNode = renderFunc();
@@ -31,11 +31,13 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 	}
 
 	function _runCompares(nodes: DNode | DNode[], isExpected: boolean = false) {
-		customCompares.forEach(({ selector, property, compare }) => {
+		customComparator.forEach(({ selector, property, comparator }) => {
 			const items = select(selector, nodes);
 			items.forEach((item: any) => {
+				// TODO do something clever, ignore the comparator if the property is specified in the assert?
+				// Only doable on VNodes though.
 				if (item.properties && item.properties[property] !== undefined) {
-					item.properties[property] = isExpected ? true : compare(item.properties[property]);
+					item.properties[property] = isExpected ? true : comparator(item.properties[property]);
 				}
 			});
 		});
