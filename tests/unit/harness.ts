@@ -49,15 +49,6 @@ describe('harness', () => {
 				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 			])
 		);
-		h.expect(() =>
-			v('div', { classes: ['root', 'other'], onclick: () => {} }, [
-				v('span', { key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} }, [
-					'hello 0'
-				]),
-				w(ChildWidget, { key: 'widget', id: 'random-id' }),
-				w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
-			])
-		);
 	});
 
 	it('expect partial for VNode', () => {

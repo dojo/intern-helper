@@ -4,13 +4,30 @@
 [![codecov](https://codecov.io/gh/dojo/test-extras/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/test-extras)
 [![npm version](https://badge.fury.io/js/%40dojo%2Ftest-extras.svg)](http://badge.fury.io/js/%40dojo%2Ftest-extras)
 
-A package that contains various modules to make it easier to test Dojo 2 with Intern.
-
-**WARNING** This is *alpha* software. It is not yet production ready, so you should use at your own risk.
+Provides a simple API for testing and asserting Dojo 2 widget's expected virtual DOM and behavior.
 
 ## Features
 
 ### harness()
+
+The `harness()` function accepts a render function and returns an object that provides the complete API interacting and asserting against a widgets virtual dom structure. It does this by accepting a render function that returns the widget under test along with `properties` and `children` required using the programmatic `w()` API or `tsx`.
+
+```ts
+const h = harness(() => w(MyWidget, { foo: 'bar' }, [ 'child' ]));
+const h = harness(() => <MyWidget foo='bar'>'child'</MyWidget>);
+```
+
+```ts
+const h = harness(() => w(MyWidget, { foo: 'bar' }, [ 'child' ]));
+```
+
+#### harness.expect(expectedRenderFunction)
+
+The most common requirement for testing is to assert the
+
+#### harness.expectPartial(selector, expectedRenderFunction)
+
+#### harness.target(selector, name, args)
 
 `harness()` is a function which takes a class that has extended `WidgetBase` and returns an instance that provides an API that
 facilitates the testing of the widget class in a way that mimics its actual runtime usage.  What the harness does is render

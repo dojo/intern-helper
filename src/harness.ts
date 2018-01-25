@@ -1,6 +1,6 @@
 import assertRender from './support/assertRender';
 import { select } from './support/selector';
-import { WNode, DNode } from '@dojo/widget-core/interfaces';
+import { WNode, DNode, WidgetBaseInterface, Constructor } from '@dojo/widget-core/interfaces';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { decorateNodes } from './support/utils';
 
@@ -10,12 +10,13 @@ export interface CustomCompare {
 	compare: (value: any) => boolean;
 }
 
-export function harness(renderFunc: () => WNode<WidgetBase>, customCompares: CustomCompare[] = []) {
+export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customCompares: CustomCompare[] = []) {
 	let renderResult: any = null;
 	let invalidated = true;
 	let wNode = renderFunc();
 	let widget: WidgetBase;
-	const { widgetConstructor, properties, children } = wNode;
+	const { properties, children } = wNode as any;
+	const widgetConstructor = wNode.widgetConstructor as Constructor<WidgetBase>;
 	if (typeof widgetConstructor === 'function') {
 		widget = new class extends widgetConstructor {
 			invalidate() {
