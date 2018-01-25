@@ -22,7 +22,7 @@ Provides a simple API for testing and asserting Dojo 2 widget's expected virtual
 ## Features
 
  * Simple, familiar and minimal API
- * Focussed harness for test Dojo 2 virtual dom structures
+ * Focused on testing Dojo 2 virtual dom structures
  * No DOM requirement by default
  * Full functional and tsx support
 
@@ -37,7 +37,7 @@ harness(renderFunction: () => WNode, customComparators?: CustomComparator[]): Ha
 ```
 
 * `renderFunction`: The a function that WNode for the widget under test
-* `customComparators`: An array of custom comparator descriptors that provide a comparator function to be used by `properties` found via a `selector` and `property` name
+* [`customComparators`](custom-comparators): Array of custom comparator descriptors. Each provides a comparator function to be used by during the comparison for `properties` located using a `selector` and `property` name
 
 The harness returns a `Harness` object that provides a small API for interacting with the widget under test:
 
@@ -75,12 +75,10 @@ const h = harness(() => {
 	return w(MyWidget, { foo }, [ 'child' ]));
 };
 
-// call expect to assert the virtial DOM structure
-h.expect(...bar...);
+h.expect(/** assertion that includes bar **/);
 // update the property that is passed to the widget
 foo = 'foo';
-// calling expect again will set the current properties and children on the widget and re-render
-h.expect(...foo...);
+h.expect(/** assertion that includes foo **/)
 ```
 
 ### Custom Comparators
