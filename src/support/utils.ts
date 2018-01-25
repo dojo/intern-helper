@@ -1,6 +1,7 @@
 import { DNode } from '@dojo/widget-core/interfaces';
 
-export function decorateNodes(nodes: DNode | DNode[], parent?: DNode) {
+export function decorateNodes(nodes: DNode | DNode[], parent?: DNode): DNode | DNode[] {
+	const isArray = Array.isArray(nodes);
 	nodes = Array.isArray(nodes) ? nodes : [nodes];
 	const decoratedNodes = nodes.map((node: any, index) => {
 		if (node === null || node === undefined || typeof node === 'string') {
@@ -12,5 +13,5 @@ export function decorateNodes(nodes: DNode | DNode[], parent?: DNode) {
 		}
 		return node;
 	});
-	return decoratedNodes;
+	return isArray ? decoratedNodes : decoratedNodes[0];
 }

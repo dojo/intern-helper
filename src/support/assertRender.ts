@@ -16,12 +16,16 @@ function replacer(key: string, value: any) {
 }
 
 export function formatDNodes(nodes: DNode | DNode[], depth: number = 0) {
-	nodes = Array.isArray(nodes) ? nodes : [nodes];
+	const isArrayFragment = Array.isArray(nodes) && depth === 0;
+	let initial = isArrayFragment ? '[\n' : '';
 	let tabs = '';
+	depth = isArrayFragment ? 1 : depth;
+	nodes = Array.isArray(nodes) ? nodes : [nodes];
+
 	for (let i = 0; i < depth; i++) {
 		tabs = `${tabs}\t`;
 	}
-	const formattedNode: string = nodes.reduce((result: string, node, index) => {
+	let formattedNode = nodes.reduce((result: string, node, index) => {
 		if (node === null || node === undefined) {
 			return result;
 		}
@@ -39,8 +43,9 @@ export function formatDNodes(nodes: DNode | DNode[], depth: number = 0) {
 			result = `${result}, [\n${formatDNodes(node.children, depth + 1)}\n${tabs}]`;
 		}
 		return `${result})`;
-	}, '');
-	return formattedNode;
+	}, initial);
+
+	return isArrayFragment ? (formattedNode = `${formattedNode}\n]`) : formattedNode;
 }
 
 function formatProperties(properties: any, tabs: string) {
@@ -97,7 +102,7 @@ export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[],
 			result = `${result}${part.value}`;
 		}
 		return result;
-	}, '');
+	}, '\n');
 
 	if (diffFound) {
 		throw new Error(parsedDiff);
