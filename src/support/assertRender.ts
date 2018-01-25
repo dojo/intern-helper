@@ -4,6 +4,7 @@ import * as diff from 'diff';
 import WeakMap from '@dojo/shim/WeakMap';
 import Set from '@dojo/shim/Set';
 import Map from '@dojo/shim/Map';
+import { from as arrayFrom } from '@dojo/shim/array';
 
 let widgetClassCounter = 0;
 const widgetMap = new WeakMap<Constructor<DefaultWidgetBaseInterface>, number>();
@@ -14,7 +15,7 @@ function replacer(key: string, value: any): any {
 	} else if (typeof value === 'undefined') {
 		return 'undefined';
 	} else if (value instanceof Set || value instanceof Map) {
-		return Array.from(value);
+		return arrayFrom(value);
 	}
 	return value;
 }

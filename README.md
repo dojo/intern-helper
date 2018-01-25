@@ -138,7 +138,7 @@ v("div", {
 	v("span", {
 		"classes": "span",
 		"id": "random-id",
-		"key": "span",
+		"key": "label",
 		"onclick": "function",
 		"style": "width: 100px"
 	}, [

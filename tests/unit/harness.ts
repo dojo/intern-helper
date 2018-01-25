@@ -334,12 +334,10 @@ describe('harness', () => {
 			}
 			const bar = new Set();
 			bar.add('foo');
-			const fooOne = new Map();
-			fooOne.set('a', 'a');
-			const fooTwo = new Map();
-			fooTwo.set('a', 'b');
-			const h = harness(() => w(Foo, { foo: fooOne, bar }));
-			h.expect(() => w(Bar, { foo: fooTwo, bar }));
+			const foo = new Map();
+			foo.set('a', 'a');
+			const h = harness(() => w(Foo, { foo, bar }));
+			h.expect(() => w(Bar, { foo, bar }));
 		});
 	});
 
