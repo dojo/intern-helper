@@ -1,13 +1,29 @@
 import assertRender from './support/assertRender';
 import { select } from './support/selector';
-import { WNode, DNode, WidgetBaseInterface, Constructor } from '@dojo/widget-core/interfaces';
+import { WNode, DNode, WidgetBaseInterface, Constructor, VNode } from '@dojo/widget-core/interfaces';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { decorateNodes } from './support/utils';
+import { decorate, isVNode, isWNode } from '@dojo/widget-core/d';
 
 export interface CustomComparator {
 	selector: string;
 	property: string;
 	comparator: (value: any) => boolean;
+}
+
+function decorateNodes(dNode: DNode | DNode[]): DNode | DNode[] {
+	const isArray = Array.isArray(dNode);
+	dNode = Array.isArray(dNode) ? dNode : [dNode];
+	function addParent(parent: WNode | VNode): WNode | VNode {
+		parent.children = (parent.children || []).map((child) => {
+			if (isVNode(child) || isWNode(child)) {
+				(child as any).parent = parent;
+			}
+			return child;
+		});
+		return parent;
+	}
+	decorate(dNode, addParent, (node: DNode): node is WNode | VNode => isWNode(node) || isVNode(node));
+	return isArray ? dNode : dNode[0];
 }
 
 export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComparator: CustomComparator[] = []) {
