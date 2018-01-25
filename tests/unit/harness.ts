@@ -3,6 +3,8 @@ const { describe, it } = intern.getInterface('bdd');
 import { harness } from './../../src/harness';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
+import Set from '@dojo/shim/Set';
+import Map from '@dojo/shim/Map';
 
 class ChildWidget extends WidgetBase<any> {}
 
@@ -320,6 +322,24 @@ describe('harness', () => {
 					w<ChildWidget>('registry-item', { key: 'registry', id: '' })
 				])
 			);
+		});
+
+		it('Support Maps and Sets in properties', () => {
+			class Bar extends WidgetBase<{ foo: Map<any, any>; bar: Set<any> }> {}
+			class Foo extends WidgetBase<{ foo: Map<any, any>; bar: Set<any> }> {
+				render() {
+					const { foo, bar } = this.properties;
+					return w(Bar, { foo, bar });
+				}
+			}
+			const bar = new Set();
+			bar.add('foo');
+			const fooOne = new Map();
+			fooOne.set('a', 'a');
+			const fooTwo = new Map();
+			fooTwo.set('a', 'b');
+			const h = harness(() => w(Foo, { foo: fooOne, bar }));
+			h.expect(() => w(Bar, { foo: fooTwo, bar }));
 		});
 	});
 

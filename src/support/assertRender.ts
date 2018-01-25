@@ -1,21 +1,25 @@
 import { DNode, WNode, VNode, DefaultWidgetBaseInterface, Constructor } from '@dojo/widget-core/interfaces';
 import { isWNode } from '@dojo/widget-core/d';
 import * as diff from 'diff';
-import { WeakMap } from '@dojo/shim/WeakMap';
+import WeakMap from '@dojo/shim/WeakMap';
+import Set from '@dojo/shim/Set';
+import Map from '@dojo/shim/Map';
 
 let widgetClassCounter = 0;
 const widgetMap = new WeakMap<Constructor<DefaultWidgetBaseInterface>, number>();
 
-function replacer(key: string, value: any) {
+function replacer(key: string, value: any): any {
 	if (typeof value === 'function') {
 		return 'function';
 	} else if (typeof value === 'undefined') {
 		return 'undefined';
+	} else if (value instanceof Set || value instanceof Map) {
+		return Array.from(value);
 	}
 	return value;
 }
 
-export function formatDNodes(nodes: DNode | DNode[], depth: number = 0) {
+export function formatDNodes(nodes: DNode | DNode[], depth: number = 0): string {
 	const isArrayFragment = Array.isArray(nodes) && depth === 0;
 	let initial = isArrayFragment ? '[\n' : '';
 	let tabs = '';
@@ -48,7 +52,7 @@ export function formatDNodes(nodes: DNode | DNode[], depth: number = 0) {
 	return isArrayFragment ? (formattedNode = `${formattedNode}\n]`) : formattedNode;
 }
 
-function formatProperties(properties: any, tabs: string) {
+function formatProperties(properties: any, tabs: string): string {
 	properties = Object.keys(properties)
 		.sort()
 		.reduce((props: any, key) => {
@@ -77,7 +81,7 @@ function getWidgetName(widgetConstructor: any): string {
 	return name;
 }
 
-function formatNode(node: WNode | VNode, tabs: any) {
+function formatNode(node: WNode | VNode, tabs: any): string {
 	const propertyKeyCount = Object.keys(node.properties).length;
 	let properties = propertyKeyCount > 0 ? formatProperties(node.properties, tabs) : '{}';
 	if (isWNode(node)) {
@@ -86,7 +90,7 @@ function formatNode(node: WNode | VNode, tabs: any) {
 	return `v("${node.tag}", ${properties}`;
 }
 
-export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[], message?: string) {
+export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[], message?: string): void {
 	const parsedActual = formatDNodes(actual);
 	const parsedExpected = formatDNodes(expected);
 	const diffResult = diff.diffLines(parsedActual, parsedExpected);
