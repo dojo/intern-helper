@@ -14,7 +14,8 @@ Provides a simple API for testing and asserting Dojo 2 widget's expected virtual
 - [`harness.expectPartial`](#harnessexpectpartial)
 - [`harness.trigger`](#harnesstrigger)
 - [How Do I Contribute?](#how-do-i-contribute)
-    - [Setup Installation](#setup-installation)
+    - [Code Style](#code-style)
+    - [Setup Installation](#installation)
     - [Testing](#testing)
 - [Licensing Information](#licensing-information)
 
@@ -199,10 +200,19 @@ h.trigger('@foo', 'onclick');
 h.trigger('@bar', 'customFunction', 100);
 ```
 
-## How do I contribute?
+## How Do I Contribute?
 
-We appreciate your interest!  Please see the [Dojo 2 Meta Repository](https://github.com/dojo/meta#readme) for the
-Contributing Guidelines and Style Guide.
+We appreciate your interest!  Please see the [Dojo Meta Repository](https://github.com/dojo/meta#readme) for the Contributing Guidelines.
+
+### Code Style
+
+This repository uses [`prettier`](https://prettier.io/) for code styling rules and formatting. A pre-commit hook is installed automatically and configured to run `prettier` against all staged files as per the configuration in the projects `package.json`.
+
+An additional npm script to run `prettier` (with write set to `true`) against all `src` and `test` project files is available by running:
+
+```bash
+npm run prettier
+```
 
 ### Installation
 
@@ -234,7 +244,4 @@ or
 
 ## Licensing information
 
-- `src/support/AssertionError` is adapted from [assertion-error](https://github.com/chaijs/assertion-error)
-  and is © 2013 Jake Luer and [MIT Licensed](http://opensource.org/licenses/MIT)
-
-© [JS Foundation](https://js.foundation/) & contributors. [New BSD](http://opensource.org/licenses/BSD-3-Clause) license.
+© 2018 [JS Foundation](https://js.foundation/). [New BSD](http://opensource.org/licenses/BSD-3-Clause) license.
