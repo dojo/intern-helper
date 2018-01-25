@@ -1,6 +1,10 @@
-import { DNode, WNode, VNode } from '@dojo/widget-core/interfaces';
+import { DNode, WNode, VNode, DefaultWidgetBaseInterface, Constructor } from '@dojo/widget-core/interfaces';
 import { isWNode } from '@dojo/widget-core/d';
 import * as diff from 'diff';
+import { WeakMap } from '@dojo/shim/WeakMap';
+
+let widgetClassCounter = 0;
+const widgetMap = new WeakMap<Constructor<DefaultWidgetBaseInterface>, number>();
 
 function replacer(key: string, value: any) {
 	if (typeof value === 'function') {
@@ -50,15 +54,29 @@ function formatProperties(properties: any, tabs: string) {
 	return `${properties}${tabs}}`;
 }
 
+function getWidgetName(widgetConstructor: any): string {
+	let name: string;
+	if (typeof widgetConstructor === 'string' || typeof widgetConstructor === 'symbol') {
+		name = widgetConstructor.toString();
+	} else {
+		name = widgetConstructor.name;
+		if (name === undefined) {
+			let id = widgetMap.get(widgetConstructor);
+			if (id === undefined) {
+				id = ++widgetClassCounter;
+				widgetMap.set(widgetConstructor, id);
+			}
+			name = `Widget-${id}`;
+		}
+	}
+	return name;
+}
+
 function formatNode(node: WNode | VNode, tabs: any) {
 	const propertyKeyCount = Object.keys(node.properties).length;
 	let properties = propertyKeyCount > 0 ? formatProperties(node.properties, tabs) : '{}';
 	if (isWNode(node)) {
-		let name =
-			typeof node.widgetConstructor === 'string'
-				? `"${node.widgetConstructor}"`
-				: (node.widgetConstructor as any).name;
-		return `w(${name}, ${properties}`;
+		return `w(${getWidgetName(node.widgetConstructor)}, ${properties}`;
 	}
 	return `v("${node.tag}", ${properties}`;
 }
