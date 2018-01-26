@@ -28,7 +28,7 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 	let invalidated = true;
 	let wNode = renderFunc();
 	let widget: WidgetBase;
-	const { properties, children } = wNode as any;
+	const { properties, children } = wNode;
 	const widgetConstructor = wNode.widgetConstructor as Constructor<WidgetBase>;
 	if (typeof widgetConstructor === 'function') {
 		widget = new class extends widgetConstructor {
