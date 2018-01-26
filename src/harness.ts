@@ -10,20 +10,17 @@ export interface CustomComparator {
 	comparator: (value: any) => boolean;
 }
 
-function decorateNodes(dNode: DNode | DNode[]): DNode | DNode[] {
-	const isArray = Array.isArray(dNode);
-	dNode = Array.isArray(dNode) ? dNode : [dNode];
-	function addParent(parent: WNode | VNode): WNode | VNode {
-		parent.children = (parent.children || []).map((child) => {
+function decorateNodes(dNode: DNode[]): DNode[];
+function decorateNodes(dNode: DNode): DNode;
+function decorateNodes(dNode: any): DNode | DNode[] {
+	function addParent(parent: WNode | VNode): void {
+		(parent.children || []).forEach((child) => {
 			if (isVNode(child) || isWNode(child)) {
 				(child as any).parent = parent;
 			}
-			return child;
 		});
-		return parent;
 	}
-	decorate(dNode, addParent, (node: DNode): node is WNode | VNode => isWNode(node) || isVNode(node));
-	return isArray ? dNode : dNode[0];
+	return decorate(dNode, addParent, (node: DNode): node is WNode | VNode => isWNode(node) || isVNode(node));
 }
 
 export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComparator: CustomComparator[] = []) {
@@ -52,7 +49,7 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 			items.forEach((item: any) => {
 				// TODO do something clever, ignore the comparator if the property is specified in the assert?
 				// Only doable on VNodes though.
-				if (item.properties && item.properties[property] !== undefined) {
+				if (item && item.properties && item.properties[property] !== undefined) {
 					item.properties[property] = isExpected ? true : comparator(item.properties[property]);
 				}
 			});
@@ -64,7 +61,7 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 		widget.__setProperties__(properties);
 		widget.__setChildren__(children);
 		if (invalidated) {
-			renderResult = decorateNodes(widget.__render__());
+			renderResult = decorateNodes(widget.__render__() as any);
 			_runCompares(renderResult);
 			invalidated = false;
 		}
