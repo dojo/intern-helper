@@ -22,7 +22,7 @@ Provides a simple API for testing and asserting Dojo 2 widget's expected virtual
 ## Features
 
  * Simple, familiar and minimal API
- * Focused on testing Dojo 2 virtual dom structures
+ * Focused on testing Dojo 2 virtual DOM structures
  * No DOM requirement by default
  * Full functional and tsx support
 
@@ -36,15 +36,15 @@ Provides a simple API for testing and asserting Dojo 2 widget's expected virtual
 harness(renderFunction: () => WNode, customComparators?: CustomComparator[]): Harness;
 ```
 
-* `renderFunction`: The a function that WNode for the widget under test
-* [`customComparators`](custom-comparators): Array of custom comparator descriptors. Each provides a comparator function to be used by during the comparison for `properties` located using a `selector` and `property` name
+* `renderFunction`: A function that returns a WNode for the widget under test
+* [`customComparators`](custom-comparators): Array of custom comparator descriptors. Each provides a comparator function to be used during the comparison for `properties` located using a `selector` and `property` name
 
 The harness returns a `Harness` object that provides a small API for interacting with the widget under test:
 
 `Harness`
 
-* [`expect`](#harnessexpect): Performs an assertion against the entire virtual DOM from the widget under tests render.
-* [`expectPartial`](#harnessexpectpartial): Performs an assertion against a section of virtual DOM from the widget under tests render.
+* [`expect`](#harnessexpect): Performs an assertion against the full render output from the widget under test.
+* [`expectPartial`](#harnessexpectpartial): Performs an assertion against a section of the render output from the widget under test.
 * [`trigger`](#harnesstrigger): Used to trigger a function from a node on the widget under test's API
 
 Setting up a widget for testing is simple and familiar using the `w()` function from `@dojo/widget-core`:
@@ -60,13 +60,13 @@ class MyWidget extends WidgetBase<{ foo: string; }> {
 const h = harness(() => w(MyWidget, { foo: 'bar' }, [ 'child' ]));
 ```
 
-The harness also supports `tsx` usage as show below. The rest of the README examples in will use the programmatic `w()` API, there are more examples of `tsx` in the [unit tests](./blob/master/tests/unit/harnessWithTsx.tsx).
+The harness also supports `tsx` usage as show below. For the rest of the README the examples will be using the programmatic `w()` API, there are more examples of `tsx` in the [unit tests](./blob/master/tests/unit/harnessWithTsx.tsx).
 
 ```ts
 const h = harness(() => <MyWidget foo='bar'>child</MyWidget>);
 ```
 
-The `renderFunction` is lazily executed so can include additional logic to manipulate the widget's `properties` and `children` between assertions.
+The `renderFunction` is lazily executed so it can include additional logic to manipulate the widget's `properties` and `children` between assertions.
 
 ```ts
 let foo = 'bar';
@@ -97,18 +97,18 @@ const compareId = {
 const h = harness(() => w(MyWidget, {}), [ compareId ]);
 ```
 
-For all assertions using the returned `harness` API will now only test identified `id` properties using the `comparator` instead of the standard equality.
+For all assertions, using the returned `harness` API will now only test identified `id` properties using the `comparator` instead of the standard equality.
 
 ## selectors
 
-The `harness` APIs commonly support a concept of css style selectors to target nodes within the virtual DOM for assertions and operations. The full list of supported selectors be found [here](https://github.com/fb55/css-select#supported-selectors).
+The `harness` APIs commonly support a concept of CSS style selectors to target nodes within the virtual DOM for assertions and operations. Review the [full list of supported selectors](https://github.com/fb55/css-select#supported-selectors) for more information.
 
 In addition to the standard API:
 
-* The `@` sigil is supported as shorthand for targeting a node's `key` property
-* The `classes` property is used instead of `class` when using the stand shorthand `.` for targeting classes
+* The `@` symbol is supported as shorthand for targeting a node's `key` property
+* The `classes` property is used instead of `class` when using the standard shorthand `.` for targeting classes
 
-## harness.expect
+## `harness.expect`
 
 The most common requirement for testing is to assert the structural output from a widget's `render` function. `expect` accepts a render function that returns the expected render output from the widget under test.
 
@@ -120,7 +120,7 @@ h.expect(() => v('div', { key: 'foo'}, [
 ]));
 ```
 
-If the actual render output and expected render output are different an exception is thrown with a structured visualization indicating all differences with `(A)` (the actual value) and `(E)` (the expected value).
+If the actual render output and expected render output are different, an exception is thrown with a structured visualization indicating all differences with `(A)` (the actual value) and `(E)` (the expected value).
 
 Example assertion failure output:
 
@@ -153,7 +153,7 @@ v("div", {
 ])
 ```
 
-### harness.expectPartial
+### `harness.expectPartial`
 
 `expectPartial` asserts against a section of the widget's render output based on a [`selector`](#selectors).
 
@@ -164,19 +164,17 @@ expectPartial(selector: string, expectedRenderFunction: () => DNode | DNode[]);
 ```
 
 * `selector`: The selector query to find the node to target
-* `expectedRenderFunction`: The a function that returns the expected DNode structure of the queried node
+* `expectedRenderFunction`: A function that returns the expected `DNode` structure of the queried node
 
-Example Usage:
+Example usage:
 
 ```ts
 h.expectPartial('@child-widget', () => w(Widget, { key: 'child-widget' }));
 ```
 
-#### harness.trigger
+#### `harness.trigger`
 
 `harness.trigger()` calls a function with the `name` on the node targeted by the `selector`.
-
-API
 
 ```ts
 trigger(selector: string, name: string: ...args: any[]);
