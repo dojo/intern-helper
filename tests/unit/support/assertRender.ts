@@ -31,7 +31,44 @@ class WidgetWithMap extends WidgetBase {
 	}
 }
 
+const expectedMessage = `
+v("div", {
+(A)	"classes": "class",
+(A)	"key": "one"
+(E)	"classes": "other",
+(E)	"extras": "foo",
+(E)	"key": "two"
+}, [
+(E)	v("span", {}, [
+(E)		"text node"
+(E)		"other"
+(E)	])
+(E)	v("span", {})
+	"text node"
+(A)	w(MockWidget, {})
+(E)	v("span", {})
+])`;
+
 describe('support/assertRender', () => {
+	it('should create an informative error message', () => {
+		const widget = new OtherWidget();
+		const renderResult = widget.__render__();
+		try {
+			assertRender(
+				renderResult,
+				v('div', { extras: 'foo', key: 'two', classes: 'other' }, [
+					v('span', ['text node', 'other']),
+					v('span'),
+					'text node',
+					v('span')
+				])
+			);
+			assert.fail();
+		} catch (e) {
+			assert.strictEqual(e.message, expectedMessage);
+		}
+	});
+
 	it('Should not throw when actual and expected match', () => {
 		const widget = new OtherWidget();
 		const renderResult = widget.__render__();

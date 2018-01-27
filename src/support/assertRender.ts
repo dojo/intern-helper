@@ -99,10 +99,10 @@ export function assertRender(actual: DNode | DNode[], expected: DNode | DNode[],
 	const parsedDiff = diffResult.reduce((result: string, part, index) => {
 		if (part.added) {
 			diffFound = true;
-			result = `${result}(E)${part.value}`;
+			result = `${result}(E)${part.value.replace(/\n\t/g, '\n(E)\t')}`;
 		} else if (part.removed) {
 			diffFound = true;
-			result = `${result}(A)${part.value}`;
+			result = `${result}(A)${part.value.replace(/\n\t/g, '\n(A)\t')}`;
 		} else {
 			result = `${result}${part.value}`;
 		}
