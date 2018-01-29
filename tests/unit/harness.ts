@@ -278,6 +278,22 @@ describe('harness', () => {
 			);
 		});
 
+		it('trigger by pseudo selector', () => {
+			const h = harness(() => w(MyWidget, {}));
+			h.trigger('div :first-child', 'onclick');
+			h.expect(() =>
+				v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+					v(
+						'span',
+						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
+						['hello 1']
+					),
+					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
+				])
+			);
+		});
+
 		it('trigger by functional selector', () => {
 			const h = harness(() => w(MyWidget, {}));
 			h.trigger('*[key="span"]', (node: WNode | VNode) => {
