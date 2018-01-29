@@ -38,6 +38,15 @@ class MyWidget extends WidgetBase {
 	}
 }
 
+class MyDeferredWidget extends WidgetBase {
+	// prettier-ignore
+	protected render() {
+		return v('div', (inserted: boolean) => {
+			return { classes: ['root', 'other'], styles: { marginTop: '100px' } };
+		});
+	}
+}
+
 class ArrayWidget extends WidgetBase {
 	_count = 0;
 	_onclick() {
@@ -92,6 +101,11 @@ describe('harness', () => {
 					'hello 0'
 				])
 			);
+		});
+
+		it('Should support deferred properties', () => {
+			const h = harness(() => w(MyDeferredWidget, {}));
+			h.expect(() => v('div', { classes: ['root', 'other'], styles: { marginTop: '100px' } }));
 		});
 
 		it('expect partial for WNode constructor', () => {

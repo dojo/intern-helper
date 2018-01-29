@@ -19,6 +19,9 @@ function decorateNodes(dNode: any): DNode | DNode[] {
 				(child as any).parent = parent;
 			}
 		});
+		if (isVNode(parent) && typeof parent.deferredPropertiesCallback === 'function') {
+			parent.properties = { ...parent.properties, ...parent.deferredPropertiesCallback(false) };
+		}
 	}
 	return decorate(dNode, addParent, (node: DNode): node is WNode | VNode => isWNode(node) || isVNode(node));
 }
