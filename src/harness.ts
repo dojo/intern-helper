@@ -107,6 +107,9 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 				}
 				triggerFunction && triggerFunction.apply(widget, args);
 			}
+		},
+		doRender(): void {
+			_tryRender();
 		}
 	};
 }
