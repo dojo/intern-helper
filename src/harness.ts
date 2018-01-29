@@ -10,6 +10,10 @@ export interface CustomComparator {
 	comparator: (value: any) => boolean;
 }
 
+export interface FunctionalSelector {
+	(node: VNode | WNode): undefined | Function;
+}
+
 function decorateNodes(dNode: DNode[]): DNode[];
 function decorateNodes(dNode: DNode): DNode;
 function decorateNodes(dNode: any): DNode | DNode[] {
@@ -91,11 +95,16 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 		expectPartial(selector: string, expectedRenderFunc: any) {
 			return _expect(expectedRenderFunc, selector);
 		},
-		trigger(selector: string, name: string, ...args: any[]) {
+		trigger(selector: string, functionSelector: string | FunctionalSelector, ...args: any[]) {
 			_tryRender();
 			const [firstItem] = select(selector, renderResult);
 			if (firstItem) {
-				const triggerFunction = (firstItem.properties as any)[name];
+				let triggerFunction: Function | undefined;
+				if (typeof functionSelector === 'string') {
+					triggerFunction = (firstItem.properties as any)[functionSelector];
+				} else {
+					triggerFunction = functionSelector(firstItem);
+				}
 				triggerFunction && triggerFunction.apply(widget, args);
 			}
 		}

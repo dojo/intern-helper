@@ -2,9 +2,10 @@ const { describe, it } = intern.getInterface('bdd');
 
 import { harness } from './../../src/harness';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { v, w } from '@dojo/widget-core/d';
+import { v, w, isVNode } from '@dojo/widget-core/d';
 import Set from '@dojo/shim/Set';
 import Map from '@dojo/shim/Map';
+import { VNode, WNode } from '@dojo/widget-core/interfaces';
 
 class ChildWidget extends WidgetBase<any> {}
 
@@ -270,6 +271,26 @@ describe('harness', () => {
 						'span',
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 0']
+					),
+					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
+				])
+			);
+		});
+
+		it('trigger by functional selector', () => {
+			const h = harness(() => w(MyWidget, {}));
+			h.trigger('*[key="span"]', (node: WNode | VNode) => {
+				if (isVNode(node)) {
+					return node.properties.onclick;
+				}
+			});
+			h.expect(() =>
+				v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+					v(
+						'span',
+						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
+						['hello 1']
 					),
 					w(ChildWidget, { key: 'widget', id: 'random-id' }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
