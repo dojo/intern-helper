@@ -89,10 +89,10 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 	}
 
 	return {
-		expect(expectedRenderFunc: any) {
+		expect(expectedRenderFunc: () => DNode | DNode[]) {
 			return _expect(expectedRenderFunc);
 		},
-		expectPartial(selector: string, expectedRenderFunc: any) {
+		expectPartial(selector: string, expectedRenderFunc: () => DNode | DNode[]) {
 			return _expect(expectedRenderFunc, selector);
 		},
 		trigger(selector: string, functionSelector: string | FunctionalSelector, ...args: any[]) {
