@@ -65,7 +65,7 @@ export const adapter: any = {
 		}
 	},
 	getSiblings(elem: DNode) {
-		if (isVNode(elem) || isWNode(elem)) {
+		if ((isVNode(elem) || isWNode(elem)) && (elem as any).parent) {
 			return (elem as any).parent.children;
 		}
 	},

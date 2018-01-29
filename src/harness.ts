@@ -46,11 +46,13 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 	function _runCompares(nodes: DNode | DNode[], isExpected: boolean = false) {
 		customComparator.forEach(({ selector, property, comparator }) => {
 			const items = select(selector, nodes);
-			items.forEach((item: any) => {
-				// TODO do something clever, ignore the comparator if the property is specified in the assert?
-				// Only doable on VNodes though.
+			items.forEach((item: any, index: number) => {
+				const comparatorName = `comparator(selector=${selector}, ${property})`;
 				if (item && item.properties && item.properties[property] !== undefined) {
-					item.properties[property] = isExpected ? true : comparator(item.properties[property]);
+					const comparatorResult = comparator(item.properties[property])
+						? comparatorName
+						: `${comparatorName} FAILED`;
+					item.properties[property] = isExpected ? comparatorName : comparatorResult;
 				}
 			});
 		});
@@ -91,7 +93,7 @@ export function harness(renderFunc: () => WNode<WidgetBaseInterface>, customComp
 			const [firstItem] = select(selector, renderResult);
 			if (firstItem) {
 				const triggerFunction = (firstItem.properties as any)[name];
-				triggerFunction.apply(widget, args);
+				triggerFunction && triggerFunction.apply(widget, args);
 			}
 		}
 	};
