@@ -31,7 +31,9 @@ class WidgetWithMap extends WidgetBase {
 	}
 }
 
-const expectedMessage = `
+function getExpectedError() {
+	const widgetName = (MockWidget as any).name || 'Widget-4';
+	return `
 v("div", {
 (A)	"classes": "class",
 (A)	"key": "one"
@@ -45,9 +47,10 @@ v("div", {
 (E)	])
 (E)	v("span", {})
 	"text node"
-(A)	w(MockWidget, {})
+(A)	w(${widgetName}, {})
 (E)	v("span", {})
 ])`;
+}
 
 describe('support/assertRender', () => {
 	it('should create an informative error message', () => {
@@ -65,7 +68,7 @@ describe('support/assertRender', () => {
 			);
 			assert.fail();
 		} catch (e) {
-			assert.strictEqual(e.message, expectedMessage);
+			assert.strictEqual(e.message, getExpectedError());
 		}
 	});
 
