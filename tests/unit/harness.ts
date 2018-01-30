@@ -1,4 +1,5 @@
 const { describe, it } = intern.getInterface('bdd');
+const { assert } = intern.getPlugin('chai');
 
 import { harness } from './../../src/harness';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
@@ -6,6 +7,8 @@ import { v, w, isVNode } from '@dojo/widget-core/d';
 import Set from '@dojo/shim/Set';
 import Map from '@dojo/shim/Map';
 import { VNode, WNode } from '@dojo/widget-core/interfaces';
+
+const noop: any = () => {};
 
 class ChildWidget extends WidgetBase<any> {}
 
@@ -21,6 +24,10 @@ class MyWidget extends WidgetBase {
 		this.invalidate();
 	}
 
+	_widgetFunction() {
+		return 'result';
+	}
+
 	// prettier-ignore
 	protected render() {
 		return v('div', { classes: ['root', 'other'], onclick: this._otherOnClick }, [
@@ -33,7 +40,7 @@ class MyWidget extends WidgetBase {
 			}, [
 				`hello ${this._count}`
 			]),
-			w(ChildWidget, { key: 'widget', id: 'random-id' }),
+			w(ChildWidget, { key: 'widget', id: 'random-id', func: this._widgetFunction }),
 			w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 		]);
 	}
@@ -89,7 +96,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 0']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -111,7 +118,7 @@ describe('harness', () => {
 
 		it('expect partial for WNode constructor', () => {
 			const h = harness(() => w(MyWidget, {}));
-			h.expectPartial('*[key="widget"]', () => w(ChildWidget, { key: 'widget', id: 'random-id' }));
+			h.expectPartial('*[key="widget"]', () => w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }));
 		});
 
 		it('expect partial for WNode registry item', () => {
@@ -130,7 +137,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 0']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -142,7 +149,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 50']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -154,7 +161,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 100']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -170,7 +177,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 1']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -186,7 +193,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 50']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -202,7 +209,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 1']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -218,7 +225,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 1']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -233,7 +240,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 0']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -245,7 +252,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 1']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -260,7 +267,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 0']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -272,7 +279,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 0']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -288,7 +295,7 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 1']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -308,9 +315,45 @@ describe('harness', () => {
 						{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
 						['hello 1']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
+			);
+		});
+
+		it('trigger returns the result of the function', () => {
+			const h = harness(() => w(MyWidget, {}));
+			const result = h.trigger('@widget', 'func');
+			assert.strictEqual(result, 'result');
+		});
+
+		it('Should be able to get the last render', () => {
+			const h = harness(() => w(MyWidget, {}));
+			const lastRender = h.getRender();
+			assert.strictEqual(lastRender, h.getRender());
+		});
+
+		it('Should be able to get render by count', () => {
+			const h = harness(() => w(MyWidget, {}));
+			const lastRender = h.getRender(0);
+			assert.strictEqual(lastRender, h.getRender());
+		});
+
+		it('should be able to pass actual render function', () => {
+			const h = harness(() => w(MyWidget, {}));
+			const lastRender = h.getRender();
+			h.expect(
+				() =>
+					v('div', { classes: ['root', 'other'], onclick: () => {} }, [
+						v(
+							'span',
+							{ key: 'span', classes: 'span', style: 'width: 100px', id: 'random-id', onclick: () => {} },
+							['hello 0']
+						),
+						w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
+						w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
+					]),
+				() => lastRender
 			);
 		});
 
@@ -327,7 +370,7 @@ describe('harness', () => {
 					v('span', { key: 'span', id: '', classes: 'span', style: 'width: 100px', onclick: () => {} }, [
 						'hello 0'
 					]),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -348,7 +391,7 @@ describe('harness', () => {
 						{ key: 'span', id: 'random-id', classes: 'span', style: 'width: 100px', onclick: () => {} },
 						['hello 0']
 					),
-					w(ChildWidget, { key: 'widget', id: '' }),
+					w(ChildWidget, { key: 'widget', id: '', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: 'random-id' })
 				])
 			);
@@ -369,7 +412,7 @@ describe('harness', () => {
 						{ key: 'span', id: 'random-id', classes: 'span', style: 'width: 100px', onclick: () => {} },
 						['hello 0']
 					),
-					w(ChildWidget, { key: 'widget', id: 'random-id' }),
+					w(ChildWidget, { key: 'widget', id: 'random-id', func: noop }),
 					w<ChildWidget>('registry-item', { key: 'registry', id: '' })
 				])
 			);
