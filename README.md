@@ -46,6 +46,7 @@ The harness returns a `Harness` object that provides a small API for interacting
 * [`expect`](#harnessexpect): Performs an assertion against the full render output from the widget under test.
 * [`expectPartial`](#harnessexpectpartial): Performs an assertion against a section of the render output from the widget under test.
 * [`trigger`](#harnesstrigger): Used to trigger a function from a node on the widget under test's API
+* [`getRender`](#harnessgetRender): Returns a render from the harness based on the index provided
 
 Setting up a widget for testing is simple and familiar using the `w()` function from `@dojo/widget-core`:
 
@@ -112,12 +113,27 @@ In addition to the standard API:
 
 The most common requirement for testing is to assert the structural output from a widget's `render` function. `expect` accepts a render function that returns the expected render output from the widget under test.
 
+API
+
+```ts
+expect(expectedRenderFunction: () => DNode | DNode[], actualRenderFunction?: () => DNode | DNode[]);
+```
+
+* `expectedRenderFunction`: A function that returns the expected `DNode` structure of the queried node
+* `actualRenderFunction`: An optional function that returns the actual `DNode` structure to be asserted
+
 ```ts
 h.expect(() => v('div', { key: 'foo'}, [
     w(Widget, { key: 'child-widget' }),
     'text node',
     v('span', { classes: [ 'class' ] })
 ]));
+```
+
+Optionally `expect` can accepts a second parameter of function that returns a render result to assert against.
+
+```ts
+h.expect(() => v('div', { key: 'foo'}), () => v('div', { key: 'foo' }));
 ```
 
 If the actual render output and expected render output are different, an exception is thrown with a structured visualization indicating all differences with `(A)` (the actual value) and `(E)` (the expected value).
@@ -165,6 +181,7 @@ expectPartial(selector: string, expectedRenderFunction: () => DNode | DNode[]);
 
 * `selector`: The selector query to find the node to target
 * `expectedRenderFunction`: A function that returns the expected `DNode` structure of the queried node
+* `actualRenderFunction`: An optional function that returns the actual `DNode` structure to be asserted
 
 Example usage:
 
@@ -177,12 +194,18 @@ h.expectPartial('@child-widget', () => w(Widget, { key: 'child-widget' }));
 `harness.trigger()` calls a function with the `name` on the node targeted by the `selector`.
 
 ```ts
-trigger(selector: string, name: string: ...args: any[]);
+interface FunctionalSelector {
+	(node: VNode | WNode): undefined | Function;
+}
+
+trigger(selector: string, functionSelector: string | FunctionalSelector: ...args: any[]): any;
 ```
 
 * `selector`: The selector query to find the node to target
-* `name`: The name of the function to call from the located node
+* `functionSelector`: Either the name of the function to call from found node's properties or a functional selector that returns a function from a nodes properties.
 * `args`: The arguments to call the located function with
+
+Returns the result of the function triggered if one is returned.
 
 Example Usage(s):
 
@@ -193,8 +216,32 @@ h.trigger('@foo', 'onclick');
 
 ```ts
 // calls the `customFunction` function on the first node with a key of `bar` with an argument of `100`
-h.trigger('@bar', 'customFunction', 100);
+// and receives the result of the triggered function
+const result = h.trigger('@bar', 'customFunction', 100);
 ```
+
+#### `harness.getRender`
+
+`harness.getRender()` returns the render with the index provided, when no index is provided it returns the last render.
+
+```ts
+getRender(index?: number);
+```
+
+* `index`: The index of the render result to return
+
+Example Usage(s):
+
+```ts
+// Returns the result of the last render
+const render = h.getRender();
+```
+
+```ts
+// Returns the result of the render for the index provided
+h.getRender(1);
+```
+
 
 ## How Do I Contribute?
 
