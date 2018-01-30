@@ -61,6 +61,7 @@ function decorateNodes(dNode: any): DecoratorResult<DNode | DNode[]> {
 			}
 		});
 		if (isVNode(parent) && typeof parent.deferredPropertiesCallback === 'function') {
+			hasDeferredProperties = true;
 			parent.properties = { ...parent.properties, ...parent.deferredPropertiesCallback(false) };
 		}
 	}
