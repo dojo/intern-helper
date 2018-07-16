@@ -1,8 +1,8 @@
 import assertRender from './support/assertRender';
 import { select } from './support/selector';
-import { WNode, DNode, WidgetBaseInterface, Constructor, VNode } from '@dojo/widget-core/interfaces';
-import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { decorate, isVNode, isWNode } from '@dojo/widget-core/d';
+import { WNode, DNode, WidgetBaseInterface, Constructor, VNode } from '@dojo/framework/widget-core/interfaces';
+import { WidgetBase } from '@dojo/framework/widget-core/WidgetBase';
+import { decorate, isVNode, isWNode } from '@dojo/framework/widget-core/d';
 
 export interface CustomComparator {
 	selector: string;

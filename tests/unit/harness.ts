@@ -2,11 +2,11 @@ const { describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
 import { harness } from './../../src/harness';
-import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { v, w, isVNode } from '@dojo/widget-core/d';
-import Set from '@dojo/shim/Set';
-import Map from '@dojo/shim/Map';
-import { VNode, WNode } from '@dojo/widget-core/interfaces';
+import { WidgetBase } from '@dojo/framework/widget-core/WidgetBase';
+import { v, w, isVNode } from '@dojo/framework/widget-core/d';
+import Set from '@dojo/framework/shim/Set';
+import Map from '@dojo/framework/shim/Map';
+import { VNode, WNode } from '@dojo/framework/widget-core/interfaces';
 
 const noop: any = () => {};
 

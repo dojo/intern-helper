@@ -29,11 +29,7 @@
     "test": "grunt test"
   },
   "peerDependencies": {
-    "@dojo/core": "^2.0.0",
-    "@dojo/has": "^2.0.0",
-    "@dojo/i18n": "^2.0.0",
-    "@dojo/shim": "^2.0.0",
-    "@dojo/widget-core": "^2.0.0"
+    "@dojo/framework": "file:./deps/framework"
   },
   "dependencies": {
     "css-select-umd": "1.3.0-rc0",
