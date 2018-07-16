@@ -2,9 +2,9 @@ const { describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
 import { adapter, parseSelector } from './../../../src/support/selector';
-import { v, w } from '@dojo/widget-core/d';
-import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { DNode, WNode } from '@dojo/widget-core/interfaces';
+import { v, w } from '@dojo/framework/widget-core/d';
+import { WidgetBase } from '@dojo/framework/widget-core/WidgetBase';
+import { DNode, WNode } from '@dojo/framework/widget-core/interfaces';
 
 describe('selector', () => {
 	describe('adapter', () => {
