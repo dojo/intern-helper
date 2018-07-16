@@ -1,3 +1,9 @@
+## The `@dojo/test-extras` repository has been deprecated and moved to [`@dojo/framework/testing`](https://github.com/dojo/framework)
+
+You can read more about this change on our [blog](https://dojo.io/blog/). We will continue providing patches for `test-extras` and other Dojo 2 repositories, and a [CLI migration tool](https://github.com/dojo/cli-upgrade) is available to aid in migrating projects from v2 to v3.
+
+***
+
 # @dojo/test-extras
 
 [![Build Status](https://travis-ci.org/dojo/test-extras.svg?branch=master)](https://travis-ci.org/dojo/test-extras)
@@ -13,10 +19,6 @@ Provides a simple API for testing and asserting Dojo 2 widget's expected virtual
 - [`harness.expect`](#harnessexpect)
 - [`harness.expectPartial`](#harnessexpectpartial)
 - [`harness.trigger`](#harnesstrigger)
-- [How Do I Contribute?](#how-do-i-contribute)
-    - [Code Style](#code-style)
-    - [Setup Installation](#installation)
-    - [Testing](#testing)
 - [Licensing Information](#licensing-information)
 
 ## Features
@@ -241,49 +243,6 @@ const render = h.getRender();
 // Returns the result of the render for the index provided
 h.getRender(1);
 ```
-
-
-## How Do I Contribute?
-
-We appreciate your interest!  Please see the [Dojo Meta Repository](https://github.com/dojo/meta#readme) for the Contributing Guidelines.
-
-### Code Style
-
-This repository uses [`prettier`](https://prettier.io/) for code styling rules and formatting. A pre-commit hook is installed automatically and configured to run `prettier` against all staged files as per the configuration in the projects `package.json`.
-
-An additional npm script to run `prettier` (with write set to `true`) against all `src` and `test` project files is available by running:
-
-```bash
-npm run prettier
-```
-
-### Installation
-
-To start working with this package, clone the repository and run `npm install`.
-
-In order to build the project, run `grunt dev` or `grunt dist`.
-
-## Testing
-
-Test cases MUST be written using [Intern](https://theintern.github.io) using the Object test interface and Assert assertion interface.
-
-90% branch coverage MUST be provided for all code submitted to this repository, as reported by istanbul’s combined coverage results for all supported platforms.
-
-To test locally in node run:
-
-`grunt test`
-
-To test against browsers with a local selenium server run:
-
-`grunt test:local`
-
-To test against BrowserStack or Sauce Labs run:
-
-`grunt test:browserstack`
-
-or
-
-`grunt test:saucelabs`
 
 ## Licensing information
 
